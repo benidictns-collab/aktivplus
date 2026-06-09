@@ -66,8 +66,8 @@ export default function Header() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3">
-          <div className="flex items-center justify-between py-2 md:py-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2">
+          <div className="flex items-center justify-between py-1">
             {/* Logo */}
             <motion.button
               onClick={() => handleNavigate('home')}
@@ -75,7 +75,7 @@ export default function Header() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <img src="/logo.png" alt="Актив Плюс" className="w-40 md:w-56 h-auto" />
+              <img src="/logo.png" alt="Актив Плюс" className="w-32 md:w-44 h-auto" />
             </motion.button>
 
             {/* Desktop Nav — GradientMenu */}
