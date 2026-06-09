@@ -75,111 +75,53 @@ const FlowArt: React.FC<FlowArtProps> = ({
       if (sections.length === 0) return;
 
       const triggers: ScrollTrigger[] = [];
-      const tweens: gsap.core.Tween[] = [];
 
-      // Stack sections: later sections on top
+      // Stack: later sections render on top
       sections.forEach((section, i) => {
         gsap.set(section, { zIndex: i + 1 });
       });
 
-      // All sections except the first start slightly below and transparent
-      // (but with visibility:visible so content is accessible)
+      // Pin each section (except the last) so the next one
+      // simply scrolls over it — no fade, no slide, no rotation
+      sections.forEach((section, i) => {
+        if (i < sections.length - 1) {
+          triggers.push(
+            ScrollTrigger.create({
+              trigger: section,
+              start: 'bottom bottom',
+              end: 'bottom top',
+              pin: true,
+              pinSpacing: false,
+            }),
+          );
+        }
+      });
+
+      // Very subtle scale-down on outgoing section for depth feeling
+      // No opacity changes, no translations — just a light scale
       sections.forEach((section, i) => {
         if (i === 0) return;
 
-        const inner = section.querySelector<HTMLElement>('.flow-art-container');
-        if (!inner) return;
-
-        // Initial state: slightly translated down and faded
-        gsap.set(inner, {
-          y: 60,
-          opacity: 0,
-        });
-
-        // Animate in: section slides up and fades in as it enters viewport
-        const enterTween = gsap.to(inner, {
-          y: 0,
-          opacity: 1,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top 85%',
-            end: 'top 20%',
-            scrub: 1.5, // Longer scrub = smoother
-          },
-        });
-        if (enterTween.scrollTrigger) triggers.push(enterTween.scrollTrigger);
-        tweens.push(enterTween);
-      });
-
-      // Pin each section (except last) so the next section slides over it
-      sections.forEach((section, i) => {
-        if (i < sections.length - 1) {
-          const pinTrigger = ScrollTrigger.create({
-            trigger: section,
-            start: 'bottom bottom',
-            end: 'bottom top',
-            pin: true,
-            pinSpacing: false,
-          });
-          triggers.push(pinTrigger);
-        }
-      });
-
-      // Fade-out the outgoing section as the next one covers it
-      sections.forEach((section, i) => {
-        if (i === 0) return; // First section doesn't need fade-out from scroll
-
-        const prevSection = sections[i - 1];
-        const prevInner = prevSection.querySelector<HTMLElement>('.flow-art-container');
+        const prevInner = sections[i - 1].querySelector<HTMLElement>('.flow-art-container');
         if (!prevInner) return;
 
-        const fadeOutTween = gsap.to(prevInner, {
-          opacity: 0.3,
-          scale: 0.97,
+        const tween = gsap.to(prevInner, {
+          scale: 0.96,
           ease: 'none',
           scrollTrigger: {
             trigger: section,
-            start: 'top 80%',
-            end: 'top 30%',
-            scrub: 1.5,
+            start: 'top bottom',
+            end: 'top top',
+            scrub: 3,
           },
         });
-        if (fadeOutTween.scrollTrigger) triggers.push(fadeOutTween.scrollTrigger);
-        tweens.push(fadeOutTween);
-      });
-
-      // Content reveal animations within each section
-      sections.forEach((section, i) => {
-        const inner = section.querySelector<HTMLElement>('.flow-art-container');
-        if (!inner) return;
-
-        // Staggered reveal of child elements
-        const children = inner.children;
-        if (children.length > 0) {
-          const revealTween = gsap.from(children, {
-            y: 30,
-            opacity: 0,
-            stagger: 0.05,
-            duration: 1,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: section,
-              start: 'top 70%',
-              end: 'top 30%',
-              scrub: 1,
-            },
-          });
-          if (revealTween.scrollTrigger) triggers.push(revealTween.scrollTrigger);
-          tweens.push(revealTween);
-        }
+        if (tween.scrollTrigger) triggers.push(tween.scrollTrigger);
       });
 
       ScrollTrigger.refresh();
 
       return () => {
         triggers.forEach((t) => t.kill());
-        tweens.forEach((t) => t.kill());
       };
     },
     { scope: containerRef, dependencies: [childCount(children), reducedMotion] },
