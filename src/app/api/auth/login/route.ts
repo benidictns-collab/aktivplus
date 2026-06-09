@@ -10,7 +10,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email и пароль обязательны' }, { status: 400 });
     }
 
-    const user = await db.user.findUnique({ where: { email } });
+    const user = await db.user.findUnique({
+      where: { email },
+      include: {
+        favorites: { orderBy: { createdAt: 'desc' } },
+        applications: { orderBy: { createdAt: 'desc' } },
+        messages: { orderBy: { createdAt: 'desc' } },
+        properties: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            manager: { select: { id: true, name: true, email: true, phone: true } },
+          },
+        },
+      },
+    });
 
     if (!user) {
       return NextResponse.json({ error: 'Пользователь не найден' }, { status: 401 });
@@ -22,11 +35,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Неверный пароль' }, { status: 401 });
     }
 
-    // Return user without password
+    // Return user without password, parse images JSON for properties
     const { password: _, ...safeUser } = user;
+    const parsedUser = {
+      ...safeUser,
+      properties: (safeUser.properties || []).map((p: any) => ({
+        ...p,
+        images: JSON.parse(p.images),
+      })),
+    };
 
     const response = NextResponse.json({
-      user: safeUser,
+      user: parsedUser,
       message: 'Вход выполнен успешно',
     });
 

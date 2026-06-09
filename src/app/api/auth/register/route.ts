@@ -33,8 +33,17 @@ export async function POST(req: NextRequest) {
 
     const { password: _, ...safeUser } = user;
 
+    // Add empty arrays for relations that frontend expects
+    const parsedUser = {
+      ...safeUser,
+      favorites: [],
+      applications: [],
+      messages: [],
+      properties: [],
+    };
+
     const response = NextResponse.json({
-      user: safeUser,
+      user: parsedUser,
       message: 'Регистрация успешна',
     });
 

@@ -199,6 +199,7 @@ export default function CabinetPage() {
   } | null>(null);
 
   // Property form
+  const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [formStep, setFormStep] = useState(1);
   const [formData, setFormData] = useState<PropertyFormData>(emptyForm);
   const [newImageUrl, setNewImageUrl] = useState('');
@@ -409,10 +410,12 @@ export default function CabinetPage() {
     setFormStep(1);
     setEditingProperty(null);
     setNewImageUrl('');
+    setShowPropertyForm(false);
   };
 
   const startEditProperty = (prop: PropertyDB) => {
     setEditingProperty(prop);
+    setShowPropertyForm(true);
     setFormData({
       title: prop.title,
       price: prop.price,
@@ -647,7 +650,7 @@ export default function CabinetPage() {
   const roleLabel = user.role === 'admin' ? 'Администратор' : user.role === 'manager' ? 'Менеджер' : 'Клиент';
   const roleBadgeColor = user.role === 'admin' ? 'bg-red-500/20 text-red-400' : user.role === 'manager' ? 'bg-blue-500/20 text-blue-400' : 'bg-[#D4AF37]/20 text-[#D4AF37]';
 
-  const displayProperties = user.role === 'admin' ? allProperties : user.properties;
+  const displayProperties = user.role === 'admin' ? allProperties : (user.properties || []);
 
   return (
     <div className="pt-20 min-h-screen bg-[#0B0B0B]">
@@ -738,9 +741,15 @@ export default function CabinetPage() {
                         </h2>
                         {(user.role === 'manager' || user.role === 'admin') && (
                           <Button
-                            onClick={() => { resetForm(); setActiveTab('properties'); }}
+                            onClick={() => {
+                              setFormData(emptyForm);
+                              setEditingProperty(null);
+                              setFormStep(1);
+                              setNewImageUrl('');
+                              setShowPropertyForm(true);
+                            }}
                             className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
-                            disabled={formStep > 0 && editingProperty === null && formData.title !== ''}
+                            disabled={showPropertyForm && !editingProperty}
                           >
                             <Plus className="w-4 h-4 mr-2" /> Добавить объект
                           </Button>
@@ -748,7 +757,7 @@ export default function CabinetPage() {
                       </div>
 
                       {/* Step-by-step form */}
-                      {formData.title !== '' || editingProperty ? (
+                      {showPropertyForm ? (
                         <div className="mb-8 bg-[#0B0B0B] rounded-2xl border border-[#D4AF37]/20 p-6">
                           <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-semibold text-white">
@@ -1021,7 +1030,7 @@ export default function CabinetPage() {
                       ) : null}
 
                       {/* Properties list */}
-                      {displayProperties.length === 0 && formData.title === '' ? (
+                      {displayProperties.length === 0 && !showPropertyForm ? (
                         <div className="text-center py-16">
                           <Building className="w-16 h-16 text-white/10 mx-auto mb-4" />
                           <p className="text-white/40 text-lg">Нет объектов</p>
