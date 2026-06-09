@@ -155,12 +155,51 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
   const ctaRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    // Immediately ensure the reveal container is visible (no flash/disappear)
+    if (revealRef.current) {
+      gsap.set(revealRef.current, { visibility: 'visible' });
+    }
+
     const ctx = gsap.context(() => {
-      gsap.fromTo(
-        revealRef.current,
-        { filter: "blur(30px)", opacity: 0, scale: 1.02 },
-        { filter: "blur(0px)", opacity: 1, scale: 1, duration: 2.2, ease: "expo.out" }
-      );
+      // Animate the title heading specifically — blur reveal effect
+      const mainHeading = containerRef.current?.querySelector('.hero-main-heading');
+      if (mainHeading) {
+        gsap.fromTo(
+          mainHeading,
+          { filter: "blur(20px)", opacity: 0 },
+          { filter: "blur(0px)", opacity: 1, duration: 1.8, ease: "expo.out" }
+        );
+      }
+
+      // Animate subtitle text
+      const heroSubtitle = containerRef.current?.querySelector('.hero-subtitle');
+      if (heroSubtitle) {
+        gsap.fromTo(
+          heroSubtitle,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 1.2, ease: "power3.out", delay: 0.4 }
+        );
+      }
+
+      // Animate the label badge
+      const heroLabel = containerRef.current?.querySelector('.hero-label');
+      if (heroLabel) {
+        gsap.fromTo(
+          heroLabel,
+          { opacity: 0, x: -20 },
+          { opacity: 1, x: 0, duration: 1, ease: "power3.out", delay: 0.2 }
+        );
+      }
+
+      // Animate the CTA button
+      const heroCta = containerRef.current?.querySelector('.hero-cta');
+      if (heroCta) {
+        gsap.fromTo(
+          heroCta,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 1, ease: "power3.out", delay: 0.6 }
+        );
+      }
 
       gsap.from(".command-cell", {
         x: 60,
@@ -168,7 +207,7 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
         stagger: 0.1,
         duration: 1.5,
         ease: "power4.out",
-        delay: 1,
+        delay: 0.8,
         clearProps: "all",
       });
 
@@ -217,16 +256,17 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
         </Suspense>
       </div>
 
-      {/* Content overlay */}
+      {/* Content overlay — always visible, no opacity:0 from GSAP */}
       <div
         ref={revealRef}
         className="relative z-10 w-full flex flex-col md:flex-row px-5 sm:px-6 md:px-14 lg:px-20 pt-24 sm:pt-28 md:pt-32 pb-20 md:pb-10 min-h-screen items-center md:items-stretch gap-6 md:gap-10"
+        style={{ visibility: 'visible' }}
       >
         {/* ── Left Column ── */}
         <div className="flex-1 min-w-0 flex flex-col justify-center pb-4 md:pb-8 w-full">
           {/* Main heading */}
           <div className="max-w-4xl pr-0 sm:pr-12">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="hero-label flex items-center gap-3 mb-6" style={{ opacity: 1 }}>
               <div className="relative w-2.5 h-2.5 bg-[#D4AF37] rounded-full">
                 <div className="absolute inset-0 bg-[#D4AF37] rounded-full animate-ping opacity-30" />
               </div>
@@ -235,12 +275,12 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
               </span>
             </div>
 
-            <h1 className="text-[clamp(2.2rem,9vw,9rem)] font-black leading-[0.9] tracking-tighter text-white uppercase">
+            <h1 className="hero-main-heading text-[clamp(2.2rem,9vw,9rem)] font-black leading-[0.9] tracking-tighter text-white uppercase" style={{ opacity: 1 }}>
               ПРЕМИАЛЬНАЯ
               <br />
               <span className="text-outline-gold">НЕДВИЖИМОСТЬ</span>
             </h1>
-            <p className="mt-8 font-mono text-[11px] text-white/40 uppercase tracking-[0.35em] max-w-sm leading-relaxed">
+            <p className="hero-subtitle mt-8 font-mono text-[11px] text-white/40 uppercase tracking-[0.35em] max-w-sm leading-relaxed" style={{ opacity: 1 }}>
               Элитные квартиры, дома и коммерческие объекты в Ростове-на-Дону.
               Полное сопровождение сделок от подбора до передачи ключей.
             </p>
@@ -249,8 +289,9 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
           {/* CTA Button */}
           <button
             ref={ctaRef}
-            className="w-fit flex items-center gap-6 group mt-10"
+            className="hero-cta w-fit flex items-center gap-6 group mt-10"
             onClick={() => onNavigate?.('catalog')}
+            style={{ opacity: 1 }}
           >
             <div className="w-14 h-14 rounded-full border border-[#D4AF37]/30 flex items-center justify-center group-hover:bg-[#D4AF37] transition-all duration-500 overflow-hidden">
               <ChevronRight className="w-5 h-5 text-[#D4AF37] group-hover:text-black transition-colors duration-500" />

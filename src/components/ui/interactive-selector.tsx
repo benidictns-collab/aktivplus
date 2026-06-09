@@ -380,8 +380,8 @@ export default function InteractiveSelector({
   if (isMobile) {
     return (
       <div className="relative flex flex-col items-center w-full bg-[#0B0B0B] font-sans text-white py-8">
-        {/* Header */}
-        <div className="w-full px-6 mb-8 text-center">
+        {/* Header — always visible, not affected by stagger animation */}
+        <div className="w-full px-6 mb-8 text-center" style={{ opacity: 1 }}>
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="h-px w-8 bg-[#D4AF37]" />
             <span className="text-[#D4AF37] text-xs font-medium tracking-[0.2em] uppercase">
@@ -500,8 +500,8 @@ export default function InteractiveSelector({
   // ─── Desktop layout ───────────────────────────────────────────────────
   return (
     <div className="relative flex flex-col items-center w-full bg-[#0B0B0B] font-sans text-white py-10">
-      {/* Header */}
-      <div className="w-full max-w-4xl px-6 mb-6 text-center">
+      {/* Header — always visible, not affected by stagger animation */}
+      <div className="w-full max-w-4xl px-6 mb-6 text-center" style={{ opacity: 1 }}>
         <div className="flex items-center justify-center gap-3 mb-4">
           <div className="h-px w-12 bg-[#D4AF37]" />
           <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">

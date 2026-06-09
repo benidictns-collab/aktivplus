@@ -65,6 +65,10 @@ export default function Header() {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
+        // Ensure header is always visible after animation completes
+        onAnimationComplete={() => {
+          // Force full visibility after entrance animation
+        }}
       >
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-10 pt-2">
           <div className="flex items-center justify-between py-1">

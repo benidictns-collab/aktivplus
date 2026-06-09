@@ -333,6 +333,33 @@ html, body {
   -webkit-text-size-adjust: 100%;
 }
 
+/* ═══════════════════════════════════════════
+   Header & Title Visibility Fixes
+   Ensure all section headers stay visible
+   above animations and 3D backgrounds
+   ═══════════════════════════════════════════ */
+
+/* Hero main heading must always be visible — no GSAP opacity:0 on parent */
+.hero-main-heading,
+.hero-subtitle,
+.hero-label,
+.hero-cta {
+  /* Ensure these elements are always rendered even before GSAP runs */
+  visibility: visible !important;
+}
+
+/* Section headers across the site must stay above scroll animations */
+section > .text-center,
+section > div > .text-center {
+  position: relative;
+  z-index: 20;
+}
+
+/* FlowArt containers must not clip their titles during rotation */
+.flow-art-container {
+  overflow: visible !important;
+}
+
 /* Better touch targets on mobile */
 @media (max-width: 768px) {
   button, a {
@@ -348,5 +375,15 @@ html, body {
   /* Smaller section padding on mobile */
   section {
     overflow-x: hidden;
+  }
+
+  /* Ensure hero text scales properly on mobile */
+  .hero-main-heading {
+    font-size: clamp(2.2rem, 9vw, 9rem) !important;
+    line-height: 0.9 !important;
+  }
+
+  .text-outline-gold {
+    -webkit-text-stroke: 1px #D4AF37;
   }
 }

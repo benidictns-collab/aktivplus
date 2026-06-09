@@ -75,8 +75,8 @@ const advantages = [
 export default function AdvantagesSection() {
   return (
     <div id="advantages" className="relative">
-      {/* Section Header */}
-      <div className="text-center py-16 md:py-24 px-4 bg-[#0B0B0B]">
+      {/* Section Header — pinned above the animation layers */}
+      <div className="relative z-30 text-center py-16 md:py-24 px-4 bg-[#0B0B0B]">
         <div className="flex items-center justify-center gap-3 mb-4">
           <div className="h-px w-12 bg-[#D4AF37]" />
           <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">

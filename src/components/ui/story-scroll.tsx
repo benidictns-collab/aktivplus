@@ -27,13 +27,12 @@ export const FlowSection: React.FC<FlowSectionProps> = ({
   <section
     data-flow-section
     aria-label={ariaLabel}
-    className={cx('relative min-h-screen w-full overflow-hidden', className)}
+    className={cx('relative min-h-screen w-full', className)}
   >
     <div
       data-flow-inner
       className={cx(
         'flow-art-container relative flex min-h-screen w-full flex-col justify-between gap-6 px-[4vw] pt-[clamp(2rem,8vw,4vw)] pb-[4vw]',
-        'will-change-transform',
       )}
       style={{ transformOrigin: 'bottom left', ...style }}
     >
@@ -78,13 +77,15 @@ const FlowArt: React.FC<FlowArtProps> = ({
       const triggers: ScrollTrigger[] = [];
 
       sections.forEach((section, i) => {
+        // Set z-index so later sections stack on top during scroll
         gsap.set(section, { zIndex: i + 1 });
 
         const inner = section.querySelector<HTMLElement>('.flow-art-container');
         if (!inner) return;
 
         if (i > 0) {
-          gsap.set(inner, { rotation: 30, transformOrigin: 'bottom left' });
+          // Reduced rotation angle to prevent content from being clipped/hidden
+          gsap.set(inner, { rotation: 12, transformOrigin: 'bottom left' });
           const tween = gsap.to(inner, {
             rotation: 0,
             ease: 'none',
