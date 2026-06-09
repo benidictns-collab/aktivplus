@@ -1,150 +1,189 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import FlowArt, { FlowSection } from '@/components/ui/story-scroll';
 import { Shield, Scale, UserCheck, Clock, RotateCcw } from 'lucide-react';
 
 const advantages = [
   {
+    num: '01',
     icon: Shield,
     title: 'Надёжность',
-    desc: '15 лет на рынке недвижимости Ростова-на-Дону. Доверие тысяч клиентов и безупречная репутация — наш главный актив.',
+    titleLarge: ['Надёж', 'ность', 'и доверие'],
+    desc: 'Мы строим отношения на основе доверия и прозрачности. Каждый клиент для нас — партнёр, чьи интересы мы защищаем на протяжении уже более 15 лет.',
     stat: '15',
     statLabel: 'лет на рынке',
+    bg: '#0B0B0B',
+    color: '#FAFAFA',
+    accent: '#D4AF37',
+    dividerColor: 'rgba(212,175,55,0.5)',
   },
   {
+    num: '02',
     icon: Scale,
     title: 'Юридическая безопасность',
-    desc: 'Полное правовое сопровождение всех сделок. Проверка юридической чистоты, оформление документов и регистрация прав.',
+    titleLarge: ['Безопас', 'ность', 'сделки'],
+    desc: 'Юридическая чистота каждой сделки — наш абсолютный приоритет. Полное правовое сопровождение и гарантия безопасности на каждом этапе.',
     stat: '100%',
     statLabel: 'чистота сделок',
+    bg: '#D4AF37',
+    color: '#0B0B0B',
+    accent: '#0B0B0B',
+    dividerColor: 'rgba(11,11,11,0.2)',
   },
   {
+    num: '03',
     icon: UserCheck,
     title: 'Персональный менеджер',
-    desc: 'За вами закрепляется личный менеджер, который знает все нюансы вашей сделки и всегда на связи.',
+    titleLarge: ['Персональ', 'ный', 'подход'],
+    desc: 'За вами закрепляется персональный менеджер, который знает все нюансы вашей сделки. Индивидуальный подход и постоянная связь на каждом этапе.',
     stat: '24/7',
     statLabel: 'на связи',
+    bg: '#0B0B0B',
+    color: '#FAFAFA',
+    accent: '#D4AF37',
+    dividerColor: 'rgba(212,175,55,0.5)',
   },
   {
+    num: '04',
     icon: Clock,
     title: 'Быстрое сопровождение',
-    desc: 'Средний срок сделки — 14 дней. Мы ценим ваше время и организуем процесс максимально эффективно.',
+    titleLarge: ['Скорость', 'и точность'],
+    desc: 'Средний срок сделки — всего 14 дней. Мы ценим ваше время и организуем процесс максимально эффективно, без лишних задержек и бюрократии.',
     stat: '14',
     statLabel: 'дней — срок сделки',
+    bg: '#141414',
+    color: '#FAFAFA',
+    accent: '#D4AF37',
+    dividerColor: 'rgba(212,175,55,0.5)',
   },
   {
+    num: '05',
     icon: RotateCcw,
     title: 'Полный цикл сделки',
-    desc: 'От подбора объекта до передачи ключей — все услуги в одном месте. Подбор, показы, переговоры, оформление без посредников.',
+    titleLarge: ['Полный', 'цикл', 'сделки'],
+    desc: 'Подбор объекта, показы, переговоры, проверка, оформление, регистрация — все услуги в одном месте без посредников.',
     stat: '500+',
     statLabel: 'сделок закрыто',
+    bg: '#D4AF37',
+    color: '#0B0B0B',
+    accent: '#0B0B0B',
+    dividerColor: 'rgba(11,11,11,0.2)',
   },
 ];
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      delay: i * 0.1,
-      duration: 0.6,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  }),
-};
-
 export default function AdvantagesSection() {
   return (
-    <section id="advantages" className="relative bg-[#0B0B0B] py-20 md:py-28 px-4">
+    <div id="advantages" className="relative">
       {/* Section Header */}
-      <div className="max-w-7xl mx-auto text-center mb-16">
-        <motion.div
-          className="flex items-center justify-center gap-3 mb-4"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
+      <div className="text-center py-16 md:py-24 px-4 bg-[#0B0B0B]">
+        <div className="flex items-center justify-center gap-3 mb-4">
           <div className="h-px w-12 bg-[#D4AF37]" />
           <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">
             Наши преимущества
           </span>
           <div className="h-px w-12 bg-[#D4AF37]" />
-        </motion.div>
-        <motion.h2
-          className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
+        </div>
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
           Почему <span className="gold-text">выбирают нас</span>
-        </motion.h2>
-        <motion.p
-          className="text-white/50 max-w-2xl mx-auto text-base md:text-lg"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
+        </h2>
+        <p className="text-white/50 max-w-2xl mx-auto text-base md:text-lg">
           Более 15 лет мы помогаем людям найти недвижимость мечты в Ростове-на-Дону
-        </motion.p>
+        </p>
       </div>
 
-      {/* Cards Grid */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {advantages.map((adv, i) => {
+      {/* FlowArt Scroll Sections */}
+      <FlowArt aria-label="Наши преимущества">
+        {advantages.map((adv, idx) => {
           const Icon = adv.icon;
+          const isGold = adv.bg === '#D4AF37';
+
           return (
-            <motion.div
-              key={adv.title}
-              custom={i}
-              variants={cardVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: '-50px' }}
-              className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 md:p-7 hover:border-[#D4AF37]/30 hover:bg-white/[0.04] transition-all duration-500 flex flex-col"
+            <FlowSection
+              key={adv.num}
+              aria-label={adv.title}
+              style={{ backgroundColor: adv.bg, color: adv.color }}
             >
-              {/* Gold glow on hover */}
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                style={{ boxShadow: '0 0 40px rgba(212, 175, 55, 0.08), inset 0 1px 0 rgba(212, 175, 55, 0.1)' }}
-              />
-
-              {/* Icon */}
-              <div className="w-12 h-12 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center mb-5 group-hover:bg-[#D4AF37]/20 transition-colors duration-500">
-                <Icon className="w-6 h-6 text-[#D4AF37]" />
-              </div>
-
-              {/* Title */}
-              <h3 className="text-white font-bold text-base md:text-lg mb-3 leading-snug">
-                {adv.title}
-              </h3>
-
-              {/* Description */}
-              <p className="text-white/45 text-sm leading-relaxed flex-1 mb-5">
-                {adv.desc}
+              {/* Number & label */}
+              <p
+                className="text-xs font-bold uppercase tracking-[0.2em]"
+                style={{ color: isGold ? 'rgba(11,11,11,0.6)' : 'rgba(212,175,55,0.7)' }}
+              >
+                {adv.num} — {adv.title}
               </p>
 
-              {/* Stat */}
-              <div className="border-t border-white/[0.06] pt-4 group-hover:border-[#D4AF37]/20 transition-colors duration-500">
-                <p className="text-2xl md:text-3xl font-black text-[#D4AF37] leading-none mb-1">
-                  {adv.stat}
-                </p>
-                <p className="text-[11px] font-mono text-white/30 uppercase tracking-wider">
-                  {adv.statLabel}
-                </p>
+              <hr className="my-[2vw] border-none h-px" style={{ backgroundColor: adv.dividerColor }} />
+
+              {/* Large title */}
+              <div>
+                <h2 className="text-[clamp(2.5rem,10vw,12rem)] font-bold leading-[0.85] uppercase tracking-tight">
+                  {adv.titleLarge.map((line, i) => (
+                    <React.Fragment key={i}>
+                      {i > 0 && <br />}
+                      {line}
+                    </React.Fragment>
+                  ))}
+                </h2>
               </div>
-            </motion.div>
+
+              <hr className="my-[2vw] border-none h-px" style={{ backgroundColor: adv.dividerColor }} />
+
+              {/* Icon + Description row */}
+              <div className="flex flex-wrap gap-[3vw] items-start">
+                <div className="min-w-[180px] flex-1">
+                  <div className="mb-3" style={{ color: adv.accent }}>
+                    <Icon className="w-8 h-8" />
+                  </div>
+                  <p
+                    className="mb-2 text-sm font-bold uppercase tracking-wider"
+                    style={{ color: adv.accent }}
+                  >
+                    {adv.title}
+                  </p>
+                  <p className="text-[clamp(0.85rem,1.3vw,1.05rem)] leading-relaxed opacity-70">
+                    {adv.desc}
+                  </p>
+                </div>
+
+                {/* Stat block */}
+                <div className="min-w-[180px] flex-1">
+                  <p
+                    className="mb-1 text-[clamp(2.5rem,5vw,4.5rem)] font-black leading-none"
+                    style={{ color: adv.accent }}
+                  >
+                    {adv.stat}
+                  </p>
+                  <p className="text-[clamp(0.75rem,1vw,0.95rem)] leading-relaxed opacity-50 uppercase tracking-wider font-mono">
+                    {adv.statLabel}
+                  </p>
+                </div>
+              </div>
+
+              <hr className="my-[2vw] border-none h-px" style={{ backgroundColor: adv.dividerColor }} />
+
+              {/* Bottom quote — alternating sides */}
+              {idx % 2 === 0 ? (
+                <p
+                  className="mt-auto ml-auto max-w-[50ch] text-right text-[clamp(1rem,2.5vw,1.75rem)] font-normal leading-relaxed"
+                  style={{ color: adv.accent }}
+                >
+                  {idx === 0 && '15 лет безупречной репутации на рынке премиальной недвижимости Ростова-на-Дону'}
+                  {idx === 2 && 'Ваш персональный менеджер всегда на связи — решение любого вопроса в кратчайшие сроки'}
+                  {idx === 4 && 'Один звонок — и мы берём всё на себя. Ваш комфорт — наша работа'}
+                </p>
+              ) : (
+                <p
+                  className="mt-auto max-w-[50ch] text-[clamp(1rem,2.5vw,1.75rem)] font-normal leading-relaxed"
+                  style={{ color: isGold ? 'rgba(11,11,11,0.7)' : 'rgba(212,175,55,0.8)' }}
+                >
+                  {idx === 1 && 'Ваша безопасность — наш главный приоритет. Мы не оставляем ни одного вопроса без ответа'}
+                  {idx === 3 && 'Оперативность и профессионализм — каждый шаг сделки под контролем экспертов'}
+                </p>
+              )}
+            </FlowSection>
           );
         })}
-      </div>
-
-      {/* Bottom decorative line */}
-      <div className="max-w-7xl mx-auto mt-16">
-        <div className="gold-divider" />
-      </div>
-    </section>
+      </FlowArt>
+    </div>
   );
 }
