@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -22,23 +22,81 @@ import {
   Bus,
   Heart,
   Send,
+  User,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useNavigationStore } from '@/store/navigation';
-import { properties } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+
+interface PropertyDB {
+  id: number;
+  title: string;
+  price: string;
+  area: string;
+  rooms: string;
+  district: string;
+  type: string;
+  dealType: string;
+  status: string;
+  description: string;
+  images: string[];
+  address: string;
+  floor: string | null;
+  parking: string | null;
+  renovation: string | null;
+  balcony: string | null;
+  year: string | null;
+  schools: string;
+  gardens: string;
+  shops: string;
+  transport: string;
+  parks: string;
+  medicine: string;
+  manager: { id: string; name: string | null; email: string; phone: string | null };
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function PropertyModal() {
   const { isPropertyModalOpen, selectedPropertyId, closePropertyModal } = useNavigationStore();
   const { toast } = useToast();
   const [currentImage, setCurrentImage] = useState(0);
   const [showForm, setShowForm] = useState(false);
+  const [property, setProperty] = useState<PropertyDB | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const property = properties.find((p) => p.id === selectedPropertyId);
+  useEffect(() => {
+    if (isPropertyModalOpen && selectedPropertyId) {
+      setIsLoading(true);
+      setCurrentImage(0);
+      setShowForm(false);
+      fetch(`/api/properties/${selectedPropertyId}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.property) setProperty(data.property);
+        })
+        .catch(console.error)
+        .finally(() => setIsLoading(false));
+    } else {
+      setProperty(null);
+    }
+  }, [isPropertyModalOpen, selectedPropertyId]);
 
+  if (!isPropertyModalOpen) return null;
+  if (isLoading) {
+    return (
+      <Dialog open={isPropertyModalOpen} onOpenChange={(open) => !open && closePropertyModal()}>
+        <DialogContent className="max-w-[500px] bg-[#0B0B0B] border-[#D4AF37]/20 p-0 rounded-2xl">
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
   if (!property) return null;
 
   const nextImage = () => setCurrentImage((prev) => (prev + 1) % property.images.length);
@@ -60,16 +118,20 @@ export default function PropertyModal() {
     { icon: Calendar, label: 'Год', value: property.year || '—' },
   ];
 
-  const infraItems = property.infrastructure
-    ? [
-        { icon: GraduationCap, label: 'Школы', value: property.infrastructure.schools },
-        { icon: TreePine, label: 'Детские сады', value: property.infrastructure.gardens },
-        { icon: ShoppingBag, label: 'Магазины', value: property.infrastructure.shops },
-        { icon: Bus, label: 'Транспорт', value: property.infrastructure.transport },
-        { icon: TreePine, label: 'Парки', value: property.infrastructure.parks },
-        { icon: Heart, label: 'Медицина', value: property.infrastructure.medicine },
-      ]
-    : [];
+  const infraItems = [
+    { icon: GraduationCap, label: 'Школы', value: property.schools },
+    { icon: TreePine, label: 'Детские сады', value: property.gardens },
+    { icon: ShoppingBag, label: 'Магазины', value: property.shops },
+    { icon: Bus, label: 'Транспорт', value: property.transport },
+    { icon: TreePine, label: 'Парки', value: property.parks },
+    { icon: Heart, label: 'Медицина', value: property.medicine },
+  ].filter(item => item.value);
+
+  const managerName = property.manager?.name || property.manager?.email || 'Менеджер';
+  const managerInitials = property.manager?.name
+    ? property.manager.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    : 'МН';
+  const managerPhone = property.manager?.phone || '+7 (863) 000-00-01';
 
   return (
     <Dialog open={isPropertyModalOpen} onOpenChange={(open) => !open && closePropertyModal()}>
@@ -88,57 +150,62 @@ export default function PropertyModal() {
           </button>
 
           {/* ─── Top: Image Gallery ─── */}
-          <div className="relative h-[250px] sm:h-[320px] md:h-[400px] lg:h-[460px]">
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={currentImage}
-                src={property.images[currentImage]}
-                alt={property.title}
-                className="w-full h-full object-cover"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              />
-            </AnimatePresence>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0B] via-transparent to-transparent" />
+          {property.images && property.images.length > 0 && (
+            <div className="relative h-[250px] sm:h-[320px] md:h-[400px] lg:h-[460px]">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={currentImage}
+                  src={property.images[currentImage]}
+                  alt={property.title}
+                  className="w-full h-full object-cover"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                />
+              </AnimatePresence>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0B] via-transparent to-transparent" />
 
-            {/* Navigation arrows */}
-            <button
-              onClick={prevImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-[#D4AF37] hover:text-black transition-all"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={nextImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-[#D4AF37] hover:text-black transition-all"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+              {property.images.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-[#D4AF37] hover:text-black transition-all"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-[#D4AF37] hover:text-black transition-all"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
 
-            {/* Thumbnails */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 overflow-x-auto max-w-[90vw] px-2 scrollbar-hide">
-              {property.images.map((img, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentImage(i)}
-                  className={`w-12 h-8 sm:w-16 sm:h-11 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${
-                    i === currentImage ? 'border-[#D4AF37]' : 'border-white/20 opacity-60 hover:opacity-100'
-                  }`}
-                >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
-                </button>
-              ))}
+              {/* Thumbnails */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 overflow-x-auto max-w-[90vw] px-2 scrollbar-hide">
+                {property.images.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentImage(i)}
+                    className={`w-12 h-8 sm:w-16 sm:h-11 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${
+                      i === currentImage ? 'border-[#D4AF37]' : 'border-white/20 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+
+              {/* Status badge */}
+              <div className="absolute top-4 left-4">
+                <span className="bg-[#D4AF37] text-black text-sm font-semibold px-4 py-2 rounded-full">
+                  {property.status}
+                </span>
+              </div>
             </div>
-
-            {/* Status badge */}
-            <div className="absolute top-4 left-4">
-              <span className="bg-[#D4AF37] text-black text-sm font-semibold px-4 py-2 rounded-full">
-                {property.status}
-              </span>
-            </div>
-          </div>
+          )}
 
           {/* ─── Content ─── */}
           <div className="p-4 sm:p-6 md:p-8 lg:p-10">
@@ -158,7 +225,7 @@ export default function PropertyModal() {
               </div>
             </div>
 
-            {/* Characteristics — max 4 columns to prevent text overflow */}
+            {/* Characteristics */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 mb-8">
               {characteristics.map((char) => (
                 <div key={char.label} className="bg-[#141414] rounded-xl p-3 md:p-4 text-center border border-white/5">
@@ -175,7 +242,7 @@ export default function PropertyModal() {
               <p className="text-white/70 leading-relaxed text-sm md:text-base">{property.description}</p>
             </div>
 
-            {/* Infrastructure — max 3 columns */}
+            {/* Infrastructure */}
             {infraItems.length > 0 && (
               <div className="mb-8">
                 <h3 className="text-lg md:text-xl font-semibold text-white mb-4">Инфраструктура</h3>
@@ -193,24 +260,24 @@ export default function PropertyModal() {
               </div>
             )}
 
-            {/* Manager & Application Form — side by side on lg */}
+            {/* Manager & Application Form */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Manager Card */}
               <div className="bg-[#141414] rounded-2xl border border-white/5 p-5 md:p-6">
                 <h3 className="text-lg font-semibold text-white mb-4">Ваш менеджер</h3>
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-14 h-14 rounded-full bg-[#D4AF37]/20 border-2 border-[#D4AF37] flex items-center justify-center shrink-0">
-                    <span className="text-[#D4AF37] font-bold text-lg">АВ</span>
+                    <span className="text-[#D4AF37] font-bold text-lg">{managerInitials}</span>
                   </div>
                   <div className="min-w-0">
-                    <div className="text-white font-medium">Анатолий Волков</div>
-                    <div className="text-white/50 text-sm">Старший менеджер</div>
+                    <div className="text-white font-medium">{managerName}</div>
+                    <div className="text-white/50 text-sm">Менеджер по недвижимости</div>
                   </div>
                 </div>
                 <div className="space-y-2 mb-4">
-                  <a href="tel:+78630000001" className="flex items-center gap-2 text-white/60 text-sm hover:text-[#D4AF37] transition-colors">
+                  <a href={`tel:${managerPhone.replace(/[\s()-]/g, '')}`} className="flex items-center gap-2 text-white/60 text-sm hover:text-[#D4AF37] transition-colors">
                     <Phone className="w-4 h-4 text-[#D4AF37] shrink-0" />
-                    <span>+7 (863) 000-00-01</span>
+                    <span>{managerPhone}</span>
                   </a>
                   <a href="#" className="flex items-center gap-2 text-white/60 text-sm hover:text-[#D4AF37] transition-colors">
                     <MessageCircle className="w-4 h-4 text-[#D4AF37] shrink-0" />

@@ -15,6 +15,12 @@ export async function GET(req: NextRequest) {
         favorites: { orderBy: { createdAt: 'desc' } },
         applications: { orderBy: { createdAt: 'desc' } },
         messages: { orderBy: { createdAt: 'desc' } },
+        properties: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            manager: { select: { id: true, name: true, email: true, phone: true } },
+          },
+        },
       },
     });
 
@@ -24,7 +30,16 @@ export async function GET(req: NextRequest) {
 
     const { password: _, ...safeUser } = user;
 
-    return NextResponse.json({ user: safeUser });
+    // Parse images JSON for properties
+    const parsedUser = {
+      ...safeUser,
+      properties: safeUser.properties.map(p => ({
+        ...p,
+        images: JSON.parse(p.images),
+      })),
+    };
+
+    return NextResponse.json({ user: parsedUser });
   } catch (error) {
     console.error('Me error:', error);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });

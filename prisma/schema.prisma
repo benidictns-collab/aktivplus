@@ -21,6 +21,39 @@ model User {
   favorites   Favorite[]
   applications Application[]
   messages    Message[]
+  properties  Property[]
+}
+
+model Property {
+  id          Int      @id @default(autoincrement())
+  title       String
+  price       String
+  area        String
+  rooms       String
+  district    String
+  type        String   // Квартира, Дом, Таунхаус и т.д.
+  dealType    String   @default("sale") // sale, rent
+  status      String   @default("Продажа")
+  description String
+  images      String   // JSON array of image URLs
+  address     String
+  floor       String?
+  parking     String?
+  renovation  String?
+  balcony     String?
+  year        String?
+  // Infrastructure
+  schools     String   @default("")
+  gardens     String   @default("")
+  shops       String   @default("")
+  transport   String   @default("")
+  parks       String   @default("")
+  medicine    String   @default("")
+  // Manager relation
+  managerId   String
+  manager     User     @relation(fields: [managerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Favorite {

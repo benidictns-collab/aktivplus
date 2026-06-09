@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Доступ запрещён' }, { status: 403 });
     }
 
-    const [users, applications, messages] = await Promise.all([
+    const [users, applications, messages, properties] = await Promise.all([
       db.user.findMany({
         orderBy: { createdAt: 'desc' },
         select: { id: true, email: true, name: true, phone: true, role: true, createdAt: true },
@@ -24,9 +24,21 @@ export async function GET(req: NextRequest) {
         orderBy: { createdAt: 'desc' },
         include: { user: { select: { name: true, email: true } } },
       }),
+      db.property.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: {
+          manager: { select: { id: true, name: true, email: true, phone: true } },
+        },
+      }),
     ]);
 
-    return NextResponse.json({ users, applications, messages });
+    // Parse images JSON
+    const parsedProperties = properties.map(p => ({
+      ...p,
+      images: JSON.parse(p.images),
+    }));
+
+    return NextResponse.json({ users, applications, messages, properties: parsedProperties });
   } catch (error) {
     console.error('Admin GET error:', error);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
