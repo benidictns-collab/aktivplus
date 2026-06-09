@@ -25,16 +25,16 @@ interface GradientMenuProps {
 
 export const GradientMenu = ({ menuItems = [] }: GradientMenuProps) => {
   return (
-    <ul className="flex gap-1">
+    <ul className="flex gap-2">
       {menuItems.map(
         ({ title, icon: Icon, gradientFrom, gradientTo, onClick, isActive }, idx) => (
           <li
             key={idx}
             style={{ "--gradient-from": gradientFrom, "--gradient-to": gradientTo } as React.CSSProperties}
-            className={`relative h-[38px] rounded-full flex items-center justify-center transition-all duration-500 hover:w-[120px] group cursor-pointer ${
+            className={`relative h-[46px] rounded-full flex items-center justify-center transition-all duration-500 hover:w-[170px] group cursor-pointer ${
               isActive
-                ? "w-[120px] bg-white/5 border border-white/10"
-                : "w-[38px] bg-white/[0.07] border border-white/[0.08]"
+                ? "w-[170px] bg-white/5 border border-white/10"
+                : "w-[50px] bg-white/[0.07] border border-white/[0.08]"
             }`}
             onClick={onClick}
           >
@@ -47,7 +47,7 @@ export const GradientMenu = ({ menuItems = [] }: GradientMenuProps) => {
 
             {/* Blur glow */}
             <span
-              className={`absolute top-[8px] inset-x-0 h-full rounded-full bg-[linear-gradient(45deg,var(--gradient-from),var(--gradient-to))] blur-[15px] -z-10 transition-all duration-500 ${
+              className={`absolute top-[8px] inset-x-0 h-full rounded-full bg-[linear-gradient(45deg,var(--gradient-from),var(--gradient-to))] blur-[18px] -z-10 transition-all duration-500 ${
                 isActive ? "opacity-40" : "opacity-0 group-hover:opacity-50"
               }`}
             />
@@ -58,12 +58,12 @@ export const GradientMenu = ({ menuItems = [] }: GradientMenuProps) => {
                 isActive ? "scale-0" : "scale-100 group-hover:scale-0"
               }`}
             >
-              <Icon className="size-4 text-white/70" />
+              <Icon className="size-5 text-white/70" />
             </span>
 
             {/* Title */}
             <span
-              className={`absolute text-white uppercase tracking-wide text-xs font-semibold whitespace-nowrap transition-all duration-500 ${
+              className={`absolute text-white uppercase text-xs font-semibold whitespace-nowrap px-4 transition-all duration-500 ${
                 isActive ? "scale-100" : "scale-0 group-hover:scale-100"
               }`}
               style={{ transitionDelay: isActive ? "0ms" : "100ms" }}
@@ -100,7 +100,7 @@ export const siteMenuConfig: {
     gradientTo: "#E8C84A",
   },
   {
-    title: "Каталог",
+    title: "Каталог объектов",
     icon: LayoutGrid,
     gradientFrom: "#B8942E",
     gradientTo: "#D4AF37",
