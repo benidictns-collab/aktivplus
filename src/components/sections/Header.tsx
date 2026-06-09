@@ -51,6 +51,7 @@ export default function Header() {
     label: link.label,
     href: `#${link.page}`,
     onClick: () => handleNavigate(link.page),
+    isActive: currentPage === link.page,
   }));
 
   return (
