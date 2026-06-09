@@ -91,7 +91,7 @@ export default function Header() {
             </nav>
 
             {/* Desktop CTA */}
-            <div className="hidden xl:flex items-center gap-4">
+            <div className="hidden xl:flex items-center gap-2">
               <a
                 href="tel:+78630000000"
                 className="text-white/80 hover:text-[#D4AF37] text-sm flex items-center gap-2 transition-colors"
