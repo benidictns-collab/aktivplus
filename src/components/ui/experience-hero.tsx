@@ -220,30 +220,25 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
       {/* Content overlay */}
       <div
         ref={revealRef}
-        className="relative z-10 w-full flex flex-col md:flex-row p-6 md:p-14 lg:p-20 min-h-screen items-center md:items-stretch gap-10"
+        className="relative z-10 w-full flex flex-col md:flex-row px-6 md:px-14 lg:px-20 pt-28 md:pt-32 pb-6 md:pb-10 min-h-screen items-center md:items-stretch gap-10"
       >
         {/* ── Left Column ── */}
-        <div className="flex-1 min-w-0 flex flex-col justify-between pb-12 md:pb-8 w-full">
-          {/* Brand indicator */}
-          <div className="flex items-center gap-3">
-            <div className="relative w-2.5 h-2.5 bg-[#D4AF37] rounded-full">
-              <div className="absolute inset-0 bg-[#D4AF37] rounded-full animate-ping opacity-30" />
-            </div>
-            <span className="font-mono text-[11px] font-bold text-[#D4AF37] tracking-[0.2em] uppercase">
-              АКТИВ ПЛЮС
-            </span>
-          </div>
-
+        <div className="flex-1 min-w-0 flex flex-col justify-center pb-12 md:pb-8 w-full">
           {/* Main heading */}
-          <div className="max-w-4xl lg:-translate-y-8 pr-12">
-            <h1 className="text-[clamp(3rem,9vw,11rem)] font-black leading-[0.87] tracking-tighter text-white uppercase">
-              ПРЕМИАЛЬ
+          <div className="max-w-4xl pr-12">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="relative w-2.5 h-2.5 bg-[#D4AF37] rounded-full">
+                <div className="absolute inset-0 bg-[#D4AF37] rounded-full animate-ping opacity-30" />
+              </div>
+              <span className="font-mono text-[11px] font-bold text-[#D4AF37] tracking-[0.2em] uppercase">
+                Агентство премиальной недвижимости
+              </span>
+            </div>
+
+            <h1 className="text-[clamp(2.8rem,7.5vw,9rem)] font-black leading-[0.9] tracking-tighter text-white uppercase">
+              ПРЕМИАЛЬНАЯ
               <br />
-              <span className="text-outline-gold">НАЯ</span>
-              <br />
-              НЕДВИЖИ
-              <br />
-              МОСТЬ
+              <span className="text-outline-gold">НЕДВИЖИМОСТЬ</span>
             </h1>
             <p className="mt-8 font-mono text-[11px] text-white/40 uppercase tracking-[0.35em] max-w-sm leading-relaxed">
               Элитные квартиры, дома и коммерческие объекты в Ростове-на-Дону.
@@ -254,7 +249,7 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
           {/* CTA Button */}
           <button
             ref={ctaRef}
-            className="w-fit flex items-center gap-6 group lg:-translate-y-20"
+            className="w-fit flex items-center gap-6 group mt-10"
             onClick={() => onNavigate?.('catalog')}
           >
             <div className="w-14 h-14 rounded-full border border-[#D4AF37]/30 flex items-center justify-center group-hover:bg-[#D4AF37] transition-all duration-500 overflow-hidden">
