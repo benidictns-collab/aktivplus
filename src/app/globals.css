@@ -355,9 +355,20 @@ section > div > .text-center {
   z-index: 20;
 }
 
-/* FlowArt containers must not clip their titles during rotation */
+/* FlowArt smooth scroll transitions */
 .flow-art-container {
-  overflow: visible !important;
+  will-change: transform, opacity;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* FlowArt sections: GPU-accelerated compositing */
+[data-flow-section] {
+  will-change: auto;
+}
+
+[data-flow-inner] {
+  transition: none;
 }
 
 /* Better touch targets on mobile */
