@@ -66,12 +66,12 @@ export default function Header() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20 md:h-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3">
+          <div className="flex items-center justify-between py-2 md:py-3">
             {/* Logo */}
             <motion.button
               onClick={() => handleNavigate('home')}
-              className="flex items-center z-60 relative"
+              className="flex items-center z-60 relative mt-1"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
