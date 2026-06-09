@@ -1,19 +1,13 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { MapPin, Phone, Clock } from 'lucide-react';
 
 export default function MapSection() {
   return (
     <section className="py-20 md:py-28 bg-[#0B0B0B]">
-      <motion.div
-        className="text-center mb-12 px-4"
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-      >
+      {/* Section Header — always visible, no animation */}
+      <div className="text-center mb-12 px-4">
         <div className="flex items-center justify-center gap-3 mb-4">
           <div className="h-px w-12 bg-[#D4AF37]" />
           <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">
@@ -24,16 +18,10 @@ export default function MapSection() {
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
           Как нас <span className="gold-text">найти</span>
         </h2>
-      </motion.div>
+      </div>
 
       <div className="max-w-7xl mx-auto px-4">
-        <motion.div
-          className="relative rounded-2xl overflow-hidden"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-        >
+        <div className="relative rounded-2xl overflow-hidden">
           {/* Map */}
           <div className="h-[400px] md:h-[500px] bg-[#1A1A1A] relative">
             <iframe
@@ -81,7 +69,7 @@ export default function MapSection() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
