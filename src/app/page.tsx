@@ -10,6 +10,7 @@ import HeroSection from '@/components/sections/HeroSection';
 import AdvantagesSection from '@/components/sections/AdvantagesSection';
 import PopularPropertiesSection from '@/components/sections/PopularPropertiesSection';
 import ServicesSection from '@/components/sections/ServicesSection';
+import PortfolioSection from '@/components/sections/PortfolioSection';
 import AboutSection from '@/components/sections/AboutSection';
 import ReviewsSection from '@/components/sections/ReviewsSection';
 import ApplicationFormSection from '@/components/sections/ApplicationFormSection';
@@ -33,6 +34,7 @@ function HomePage() {
       <AdvantagesSection />
       <PopularPropertiesSection />
       <ServicesSection />
+      <PortfolioSection />
       <AboutSection />
       <ReviewsSection />
       <ApplicationFormSection />
