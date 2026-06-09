@@ -190,3 +190,135 @@ html {
 .animate-loading {
   animation: loading-slide 1.5s ease-in-out infinite;
 }
+
+/* ═══════════════════════════════════════════
+   Parallax Hero Section
+   ═══════════════════════════════════════════ */
+
+.parallax {
+  --parallax-height: 200vh;
+  position: relative;
+}
+
+.parallax__header {
+  height: var(--parallax-height);
+  position: relative;
+  overflow: hidden;
+}
+
+.parallax__visuals {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.parallax__black-line-overflow {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30vh;
+  background: linear-gradient(to top, #0B0B0B 0%, transparent 100%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.parallax__layers {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.parallax__layer-img {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  object-fit: cover;
+  filter: brightness(0.5) saturate(0.7);
+}
+
+[data-parallax-layer="1"] {
+  z-index: 1;
+}
+
+[data-parallax-layer="2"] {
+  z-index: 2;
+  filter: brightness(0.55) saturate(0.8) !important;
+}
+
+[data-parallax-layer="4"] {
+  z-index: 4;
+  filter: brightness(0.4) saturate(0.6) !important;
+}
+
+.parallax__layer-title {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  text-align: center;
+  pointer-events: none;
+}
+
+.parallax__title {
+  font-size: clamp(3rem, 10vw, 10rem);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: white;
+  text-shadow: 0 0 80px rgba(212, 175, 55, 0.4), 0 0 160px rgba(212, 175, 55, 0.15);
+  margin: 0;
+}
+
+.parallax__title-accent {
+  background: linear-gradient(135deg, #D4AF37, #F1D28A, #D4AF37);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.parallax__subtitle {
+  margin-top: 1.5rem;
+  font-size: clamp(0.75rem, 1.5vw, 1.1rem);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(212, 175, 55, 0.7);
+  font-weight: 500;
+}
+
+.parallax__fade {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(11, 11, 11, 0.5) 100%);
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Responsive: hide overflow on small screens */
+@media (max-width: 768px) {
+  .parallax__layer-img {
+    top: -5%;
+    left: -5%;
+    width: 110%;
+    height: 110%;
+  }
+
+  .parallax__title {
+    font-size: clamp(2.5rem, 14vw, 5rem);
+  }
+
+  .parallax__subtitle {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+  }
+}
