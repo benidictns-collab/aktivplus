@@ -66,7 +66,7 @@ export default function Header() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-10 pt-2">
           <div className="flex items-center justify-between py-1">
             {/* Logo */}
             <motion.button

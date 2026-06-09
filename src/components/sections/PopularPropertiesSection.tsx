@@ -1,9 +1,8 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
-import dynamic from 'next/dynamic';
 import { ArrowRight } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useNavigationStore } from '@/store/navigation';
 
 const ImageGallery = dynamic(
@@ -31,15 +30,9 @@ export default function PopularPropertiesSection() {
 
   return (
     <section className="py-20 md:py-28 bg-[#0B0B0B]">
-      {/* Section Header — always rendered, SSR-safe */}
+      {/* Section Header — no animation, always visible */}
       <div className="max-w-7xl mx-auto px-4 mb-10">
-        <motion.div
-          className="text-center mb-4"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
+        <div className="text-center mb-4">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="h-px w-12 bg-[#D4AF37]" />
             <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">
@@ -53,16 +46,10 @@ export default function PopularPropertiesSection() {
           <p className="text-white/60 max-w-2xl mx-auto">
             Самые востребованные предложения на рынке недвижимости Ростова-на-Дону
           </p>
-        </motion.div>
+        </div>
 
         {/* View All link */}
-        <motion.div
-          className="text-center mb-8"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3 }}
-        >
+        <div className="text-center mb-8">
           <button
             onClick={() => navigate('catalog')}
             className="text-[#D4AF37] hover:text-[#F1D28A] text-sm font-medium transition-colors underline underline-offset-4 inline-flex items-center gap-2"
@@ -70,21 +57,14 @@ export default function PopularPropertiesSection() {
             Смотреть все объекты
             <ArrowRight className="w-4 h-4" />
           </button>
-        </motion.div>
+        </div>
       </div>
 
       {/* Gallery — dynamically loaded */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-      >
-        <ImageGallery
-          showHeader={false}
-          onImageClick={(id) => openPropertyModal(id)}
-        />
-      </motion.div>
+      <ImageGallery
+        showHeader={false}
+        onImageClick={(id) => openPropertyModal(id)}
+      />
     </section>
   );
 }
