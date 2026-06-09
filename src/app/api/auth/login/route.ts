@@ -35,6 +35,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Неверный пароль' }, { status: 401 });
     }
 
+    if (user.blocked) {
+      return NextResponse.json({ error: 'Аккаунт заблокирован. Обратитесь к администратору.' }, { status: 403 });
+    }
+
     // Return user without password, parse images JSON for properties
     const { password: _, ...safeUser } = user;
     const parsedUser = {

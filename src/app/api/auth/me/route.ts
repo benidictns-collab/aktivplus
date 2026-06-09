@@ -28,6 +28,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 });
     }
 
+    if (user.blocked) {
+      return NextResponse.json({ error: 'Аккаунт заблокирован' }, { status: 403 });
+    }
+
     const { password: _, ...safeUser } = user;
 
     // Parse images JSON for properties

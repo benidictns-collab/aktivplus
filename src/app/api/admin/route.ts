@@ -14,7 +14,10 @@ export async function GET(req: NextRequest) {
     const [users, applications, messages, properties] = await Promise.all([
       db.user.findMany({
         orderBy: { createdAt: 'desc' },
-        select: { id: true, email: true, name: true, phone: true, role: true, createdAt: true },
+        select: {
+          id: true, email: true, name: true, phone: true, role: true, blocked: true, createdAt: true,
+          _count: { select: { properties: true, applications: true, favorites: true } },
+        },
       }),
       db.application.findMany({
         orderBy: { createdAt: 'desc' },

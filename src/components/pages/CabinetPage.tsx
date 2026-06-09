@@ -4,11 +4,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Lock, Mail, Phone, Heart, FileText, MessageCircle, Clock,
-  Settings, LogOut, Eye, EyeOff, ShieldCheck, Users, BarChart3,
+  Settings, LogOut, Eye, EyeOff, ShieldCheck, ShieldOff, Users, BarChart3,
   MapPin, ChevronRight, Send, Trash2, CheckCircle, AlertCircle,
   Loader2, Building, Home, Key, Scale, Plus, Pencil, X, ImagePlus,
   Maximize, BedDouble, Car, PaintBucket, Sun, Calendar,
-  GraduationCap, TreePine, ShoppingBag, Bus, ChevronLeft
+  GraduationCap, TreePine, ShoppingBag, Bus, ChevronLeft,
+  UserPlus, Ban
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -207,6 +208,17 @@ export default function CabinetPage() {
 
   // All properties (for catalog integration)
   const [allProperties, setAllProperties] = useState<PropertyDB[]>([]);
+
+  // User management
+  const [showUserForm, setShowUserForm] = useState(false);
+  const [editingUser, setEditingUser] = useState<any | null>(null);
+  const [userFormData, setUserFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    role: 'client',
+  });
 
   /* ─── Check session on mount ────────────────────────── */
   const fetchUser = useCallback(async () => {
@@ -504,6 +516,133 @@ export default function CabinetPage() {
       }
     } catch {}
   };
+
+  /* ─── User management handlers ─────────────────────── */
+  const resetUserForm = () => {
+    setShowUserForm(false);
+    setEditingUser(null);
+    setUserFormData({ name: '', email: '', phone: '', password: '', role: 'client' });
+  };
+
+  const startEditUser = (u: any) => {
+    setEditingUser(u);
+    setUserFormData({
+      name: u.name || '',
+      email: u.email || '',
+      phone: u.phone || '',
+      password: '',
+      role: u.role || 'client',
+    });
+    setShowUserForm(true);
+  };
+
+  const handleSaveUser = async () => {
+    setIsLoading(true);
+    try {
+      if (editingUser) {
+        const body: any = {
+          name: userFormData.name,
+          email: userFormData.email,
+          phone: userFormData.phone,
+          role: userFormData.role,
+        };
+        if (userFormData.password) body.password = userFormData.password;
+        const res = await fetch(`/api/users/${editingUser.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (res.ok) {
+          toast({ title: 'Пользователь обновлён' });
+          resetUserForm();
+          refreshAdminData();
+        } else {
+          const data = await res.json();
+          toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+        }
+      } else {
+        const res = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userFormData),
+        });
+        if (res.ok) {
+          toast({ title: 'Пользователь создан' });
+          resetUserForm();
+          refreshAdminData();
+        } else {
+          const data = await res.json();
+          toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+        }
+      }
+    } catch {
+      toast({ title: 'Ошибка соединения', variant: 'destructive' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (id: string) => {
+    if (!confirm('Удалить пользователя? Это действие необратимо.')) return;
+    try {
+      const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast({ title: 'Пользователь удалён' });
+        refreshAdminData();
+      } else {
+        const data = await res.json();
+        toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'Ошибка соединения', variant: 'destructive' });
+    }
+  };
+
+  const handleToggleBlock = async (u: any) => {
+    const action = u.blocked ? 'разблокировать' : 'заблокировать';
+    if (!confirm(`Вы уверены, что хотите ${action} пользователя ${u.name || u.email}?`)) return;
+    try {
+      const res = await fetch(`/api/users/${u.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blocked: !u.blocked }),
+      });
+      if (res.ok) {
+        toast({ title: u.blocked ? 'Пользователь разблокирован' : 'Пользователь заблокирован' });
+        refreshAdminData();
+      } else {
+        const data = await res.json();
+        toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'Ошибка соединения', variant: 'destructive' });
+    }
+  };
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    try {
+      const res = await fetch(`/api/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole }),
+      });
+      if (res.ok) {
+        toast({ title: 'Роль обновлена' });
+        refreshAdminData();
+      } else {
+        const data = await res.json();
+        toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'Ошибка соединения', variant: 'destructive' });
+    }
+  };
+
+  const refreshAdminData = useCallback(() => {
+    fetch('/api/admin').then(r => r.json()).then(data => {
+      if (data.users) setAdminData(data);
+    }).catch(() => {});
+  }, []);
 
   /* ─── Tabs config ───────────────────────────────────── */
   const clientTabs: { id: TabId; label: string; icon: React.ElementType }[] = [
@@ -1288,59 +1427,260 @@ export default function CabinetPage() {
                         </div>
                       ) : (
                         <div className="space-y-8">
-                          {/* Stats */}
+                          {/* Stats Cards */}
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
+                            <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
                               <Users className="w-6 h-6 text-[#D4AF37] mb-2" />
                               <p className="text-2xl font-bold text-white">{adminData.users.length}</p>
                               <p className="text-white/50 text-sm">Пользователей</p>
-                            </div>
-                            <div className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
+                            </motion.div>
+                            <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
                               <FileText className="w-6 h-6 text-[#D4AF37] mb-2" />
                               <p className="text-2xl font-bold text-white">{adminData.applications.length}</p>
                               <p className="text-white/50 text-sm">Заявок</p>
-                            </div>
-                            <div className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
+                            </motion.div>
+                            <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
                               <MessageCircle className="w-6 h-6 text-[#D4AF37] mb-2" />
                               <p className="text-2xl font-bold text-white">{adminData.messages.length}</p>
                               <p className="text-white/50 text-sm">Сообщений</p>
-                            </div>
-                            <div className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
+                            </motion.div>
+                            <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
                               <Building className="w-6 h-6 text-[#D4AF37] mb-2" />
                               <p className="text-2xl font-bold text-white">{adminData.properties?.length || 0}</p>
                               <p className="text-white/50 text-sm">Объектов</p>
-                            </div>
+                            </motion.div>
                           </div>
 
-                          {/* Users table */}
+                          {/* User Management Section */}
                           <div>
-                            <h3 className="text-lg font-semibold text-white mb-4">Пользователи</h3>
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="text-lg font-semibold text-white">Управление пользователями</h3>
+                              <Button
+                                onClick={() => {
+                                  resetUserForm();
+                                  setShowUserForm(true);
+                                }}
+                                className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
+                                disabled={showUserForm && !editingUser}
+                              >
+                                <UserPlus className="w-4 h-4 mr-2" /> Добавить пользователя
+                              </Button>
+                            </div>
+
+                            {/* User Form */}
+                            {showUserForm && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="mb-6 bg-[#0B0B0B] rounded-2xl border border-[#D4AF37]/20 p-6"
+                              >
+                                <div className="flex items-center justify-between mb-6">
+                                  <h4 className="text-lg font-semibold text-white">
+                                    {editingUser ? 'Редактирование пользователя' : 'Новый пользователь'}
+                                  </h4>
+                                  <button onClick={resetUserForm} className="text-white/40 hover:text-white transition-colors">
+                                    <X className="w-5 h-5" />
+                                  </button>
+                                </div>
+
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="text-white/50 text-sm mb-1.5 block">Имя</label>
+                                    <div className="relative">
+                                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                      <Input
+                                        value={userFormData.name}
+                                        onChange={e => setUserFormData(prev => ({ ...prev, name: e.target.value }))}
+                                        placeholder="Иван Иванов"
+                                        className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <label className="text-white/50 text-sm mb-1.5 block">Email *</label>
+                                    <div className="relative">
+                                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                      <Input
+                                        value={userFormData.email}
+                                        onChange={e => setUserFormData(prev => ({ ...prev, email: e.target.value }))}
+                                        placeholder="email@example.com"
+                                        type="email"
+                                        className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
+                                        required
+                                      />
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <label className="text-white/50 text-sm mb-1.5 block">Телефон</label>
+                                    <div className="relative">
+                                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                      <Input
+                                        value={userFormData.phone}
+                                        onChange={e => setUserFormData(prev => ({ ...prev, phone: e.target.value }))}
+                                        placeholder="+7 (999) 123-45-67"
+                                        type="tel"
+                                        className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <label className="text-white/50 text-sm mb-1.5 block">
+                                      Пароль {editingUser ? '(оставьте пустым, чтобы не менять)' : '*'}
+                                    </label>
+                                    <div className="relative">
+                                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                      <Input
+                                        value={userFormData.password}
+                                        onChange={e => setUserFormData(prev => ({ ...prev, password: e.target.value }))}
+                                        placeholder={editingUser ? 'Новый пароль' : 'Мин. 6 символов'}
+                                        type="password"
+                                        className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
+                                        required={!editingUser}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <label className="text-white/50 text-sm mb-1.5 block">Роль</label>
+                                    <select
+                                      value={userFormData.role}
+                                      onChange={e => setUserFormData(prev => ({ ...prev, role: e.target.value }))}
+                                      className="w-full bg-[#141414] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-[#D4AF37] focus:outline-none"
+                                    >
+                                      <option value="client">Клиент</option>
+                                      <option value="manager">Менеджер</option>
+                                      <option value="admin">Администратор</option>
+                                    </select>
+                                  </div>
+                                </div>
+
+                                <div className="flex gap-3 mt-6">
+                                  <Button
+                                    onClick={handleSaveUser}
+                                    disabled={isLoading}
+                                    className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
+                                  >
+                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                                    {editingUser ? 'Сохранить' : 'Создать'}
+                                  </Button>
+                                  <Button
+                                    onClick={resetUserForm}
+                                    variant="outline"
+                                    className="border-white/10 text-white/60 hover:text-white hover:border-white/20"
+                                  >
+                                    Отмена
+                                  </Button>
+                                </div>
+                              </motion.div>
+                            )}
+
+                            {/* Users Table */}
                             <div className="overflow-x-auto">
                               <table className="w-full text-sm">
                                 <thead>
                                   <tr className="border-b border-white/10">
-                                    <th className="text-left text-white/50 py-3 px-2">Имя</th>
-                                    <th className="text-left text-white/50 py-3 px-2">Email</th>
+                                    <th className="text-left text-white/50 py-3 px-2">Пользователь</th>
                                     <th className="text-left text-white/50 py-3 px-2">Роль</th>
-                                    <th className="text-left text-white/50 py-3 px-2">Дата</th>
+                                    <th className="text-left text-white/50 py-3 px-2">Статус</th>
+                                    <th className="text-left text-white/50 py-3 px-2 hidden md:table-cell">Объекты</th>
+                                    <th className="text-left text-white/50 py-3 px-2 hidden sm:table-cell">Дата</th>
+                                    <th className="text-right text-white/50 py-3 px-2">Действия</th>
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {adminData.users.map(u => (
-                                    <tr key={u.id} className="border-b border-white/5 hover:bg-white/[0.02]">
-                                      <td className="py-3 px-2 text-white">{u.name || '—'}</td>
-                                      <td className="py-3 px-2 text-white/70">{u.email}</td>
+                                  {adminData.users.map((u: any) => (
+                                    <tr
+                                      key={u.id}
+                                      className={`border-b border-white/5 transition-colors ${
+                                        u.blocked ? 'bg-red-500/5' : 'hover:bg-white/[0.02]'
+                                      }`}
+                                    >
                                       <td className="py-3 px-2">
-                                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                          u.role === 'admin' ? 'bg-red-500/20 text-red-400'
-                                            : u.role === 'manager' ? 'bg-blue-500/20 text-blue-400'
-                                            : 'bg-[#D4AF37]/20 text-[#D4AF37]'
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-9 h-9 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center shrink-0">
+                                            <span className="text-[#D4AF37] font-semibold text-sm">
+                                              {(u.name || u.email)[0].toUpperCase()}
+                                            </span>
+                                          </div>
+                                          <div className="min-w-0">
+                                            <p className="text-white truncate">{u.name || 'Без имени'}</p>
+                                            <p className="text-white/40 text-xs truncate">{u.email}</p>
+                                          </div>
+                                        </div>
+                                      </td>
+                                      <td className="py-3 px-2">
+                                        {u.role === 'admin' ? (
+                                          <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-medium">
+                                            Админ
+                                          </span>
+                                        ) : (
+                                          <select
+                                            value={u.role}
+                                            onChange={e => handleRoleChange(u.id, e.target.value)}
+                                            className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#D4AF37] ${
+                                              u.role === 'manager'
+                                                ? 'bg-blue-500/20 text-blue-400'
+                                                : 'bg-[#D4AF37]/20 text-[#D4AF37]'
+                                            }`}
+                                          >
+                                            <option value="client">Клиент</option>
+                                            <option value="manager">Менеджер</option>
+                                          </select>
+                                        )}
+                                      </td>
+                                      <td className="py-3 px-2">
+                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                          u.blocked
+                                            ? 'bg-red-500/20 text-red-400'
+                                            : 'bg-green-500/20 text-green-400'
                                         }`}>
-                                          {u.role === 'admin' ? 'Админ' : u.role === 'manager' ? 'Менеджер' : 'Клиент'}
+                                          {u.blocked ? 'Заблокирован' : 'Активен'}
                                         </span>
                                       </td>
-                                      <td className="py-3 px-2 text-white/40">
+                                      <td className="py-3 px-2 hidden md:table-cell">
+                                        {u.role === 'manager' || u.role === 'admin' ? (
+                                          <span className="text-white/50 text-xs">
+                                            {u._count?.properties ?? '—'} объектов
+                                          </span>
+                                        ) : (
+                                          <span className="text-white/30 text-xs">—</span>
+                                        )}
+                                      </td>
+                                      <td className="py-3 px-2 text-white/40 hidden sm:table-cell">
                                         {new Date(u.createdAt).toLocaleDateString('ru-RU')}
+                                      </td>
+                                      <td className="py-3 px-2">
+                                        <div className="flex items-center justify-end gap-1">
+                                          <button
+                                            onClick={() => startEditUser(u)}
+                                            className="p-1.5 rounded-lg text-white/40 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors"
+                                            title="Редактировать"
+                                          >
+                                            <Pencil className="w-4 h-4" />
+                                          </button>
+                                          {u.role !== 'admin' && (
+                                            <>
+                                              <button
+                                                onClick={() => handleToggleBlock(u)}
+                                                className={`p-1.5 rounded-lg transition-colors ${
+                                                  u.blocked
+                                                    ? 'text-red-400 hover:text-green-400 hover:bg-green-500/10'
+                                                    : 'text-white/40 hover:text-red-400 hover:bg-red-500/10'
+                                                }`}
+                                                title={u.blocked ? 'Разблокировать' : 'Заблокировать'}
+                                              >
+                                                {u.blocked ? <ShieldCheck className="w-4 h-4" /> : <ShieldOff className="w-4 h-4" />}
+                                              </button>
+                                              <button
+                                                onClick={() => handleDeleteUser(u.id)}
+                                                className="p-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                                title="Удалить"
+                                              >
+                                                <Trash2 className="w-4 h-4" />
+                                              </button>
+                                            </>
+                                          )}
+                                        </div>
                                       </td>
                                     </tr>
                                   ))}
@@ -1349,15 +1689,57 @@ export default function CabinetPage() {
                             </div>
                           </div>
 
+                          {/* Quick Stats for Managers */}
+                          {adminData.users.filter((u: any) => u.role === 'manager').length > 0 && (
+                            <div>
+                              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                                <BarChart3 className="w-5 h-5 text-[#D4AF37]" /> Статистика менеджеров
+                              </h3>
+                              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {adminData.users
+                                  .filter((u: any) => u.role === 'manager')
+                                  .map((u: any) => (
+                                    <motion.div
+                                      key={u.id}
+                                      whileHover={{ scale: 1.02 }}
+                                      className="bg-[#0B0B0B] rounded-xl p-4 border border-white/5 flex items-center gap-3"
+                                    >
+                                      <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0">
+                                        <span className="text-blue-400 font-semibold text-sm">
+                                          {(u.name || u.email)[0].toUpperCase()}
+                                        </span>
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <p className="text-white text-sm font-medium truncate">{u.name || u.email}</p>
+                                        <p className="text-white/40 text-xs">
+                                          {u._count?.properties ?? 0} объектов
+                                        </p>
+                                      </div>
+                                      <div className="text-right">
+                                        <p className="text-[#D4AF37] font-bold">{u._count?.properties ?? 0}</p>
+                                      </div>
+                                    </motion.div>
+                                  ))}
+                              </div>
+                            </div>
+                          )}
+
                           {/* Applications */}
                           <div>
-                            <h3 className="text-lg font-semibold text-white mb-4">Заявки</h3>
+                            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                              <FileText className="w-5 h-5 text-[#D4AF37]" /> Заявки
+                            </h3>
                             {adminData.applications.length === 0 ? (
-                              <p className="text-white/40">Нет заявок</p>
+                              <div className="text-center py-8 text-white/40">
+                                <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                                <p>Нет заявок</p>
+                              </div>
                             ) : (
-                              <div className="space-y-2">
+                              <div className="space-y-2 max-h-96 overflow-y-auto pr-1"
+                                style={{ scrollbarWidth: 'thin', scrollbarColor: '#D4AF37 transparent' }}
+                              >
                                 {adminData.applications.map((app: any) => (
-                                  <div key={app.id} className="flex items-center gap-3 p-3 rounded-lg bg-[#0B0B0B] border border-white/5">
+                                  <div key={app.id} className="flex items-center gap-3 p-3 rounded-lg bg-[#0B0B0B] border border-white/5 hover:border-white/10 transition-colors">
                                     <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor[app.status] || 'bg-white/10 text-white/50'}`}>
                                       {statusLabel[app.status] || app.status}
                                     </span>
