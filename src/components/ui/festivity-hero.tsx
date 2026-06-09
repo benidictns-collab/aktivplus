@@ -9,7 +9,7 @@ export interface FestivityHeroProps {
   onNavigate?: (section: string) => void
 }
 
-const Component = ({ onNavigate }: FestivityHeroProps) => {
+export const Component = ({ onNavigate }: FestivityHeroProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const sceneRef = useRef<THREE.Scene | null>(null)
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
