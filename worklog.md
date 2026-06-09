@@ -70,3 +70,44 @@ Stage Summary:
 - All 6 advantages (Надёжность, Проверенные объекты, Юридическая безопасность, Персональный менеджер, Быстрое сопровождение, Полный цикл сделки) covered across 3 sections
 - Black & Gold luxury theme maintained throughout
 - Framer-motion entrance animations on section header
+
+---
+Task ID: 3
+Agent: main
+Task: Replace HeroSection with 21st.dev experience-hero 3D component (Three.js / React Three Fiber)
+
+Work Log:
+- Installed Three.js dependencies: three, @react-three/drei, @react-three/fiber, @types/three
+- Created /components/ui/experience-hero.tsx adapted for Актив Плюс branding:
+  - LiquidBackground: Custom GLSL shader with dark base + subtle gold shimmer (reacts to mouse + time)
+  - Monolith: Gold-tinted icosahedron with Float + MeshDistortMaterial (metalness=1, rotating)
+  - GoldParticles: 120 floating gold particles in 3D space with slow rotation
+  - GSAP reveal animation (blur→sharp, scale 1.02→1, 2.2s expo.out)
+  - GSAP stagger animation for command-cell panels (slide from right)
+  - Magnetic CTA button effect (follows cursor within 150px radius)
+- Adapted all content for Актив Плюс:
+  - Brand indicator: gold pulsing dot + "АКТИВ ПЛЮС" monospace label
+  - Main heading: "ПРЕМИАЛЬНАЯ / НЕДВИЖИМОСТЬ" with gold outline text effect
+  - Subtitle: Russian real estate description
+  - CTA: "Подобрать объект" with navigation to catalog page
+  - Right deck: 4 glass-panel cards (Приём заявок/Статистика/Экспертиза/Контакты)
+  - Bottom bar: Location + scroll indicator
+- Updated globals.css with:
+  - glass-panel class (blurred dark background with gold border)
+  - text-outline-gold class (gold stroke text for hero heading)
+  - text-outline class (white stroke text)
+  - @keyframes loading-slide animation
+  - .animate-loading utility class
+  - Added --animate-loading to @theme inline
+- Updated HeroSection.tsx to use dynamic import with ssr:false (Three.js requires client rendering)
+  - Loading spinner fallback while 3D scene loads
+  - Navigation integration preserved
+- Build verified successfully
+
+Stage Summary:
+- Hero section completely rebuilt with immersive 3D WebGL background
+- Three.js + React Three Fiber for 3D rendering (liquid shader, gold monolith, particles)
+- GSAP for reveal animations and magnetic CTA effect
+- Black & Gold luxury theme with glass-panel cards
+- SSR-safe via next/dynamic with ssr:false
+- All text in Russian, real estate context
