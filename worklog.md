@@ -111,3 +111,38 @@ Stage Summary:
 - Black & Gold luxury theme with glass-panel cards
 - SSR-safe via next/dynamic with ssr:false
 - All text in Russian, real estate context
+
+---
+Task ID: 4
+Agent: main
+Task: Replace HeroSection with 21st.dev festivity-hero (interactive 3D gold spheres)
+
+Work Log:
+- Created /components/ui/festivity-hero.tsx based on 21st.dev kedhareswer.12110626/festivity-hero
+- Adapted for Актив Плюс Black & Gold luxury theme:
+  - Changed sphere material from pink/red (MeshLambertMaterial) to gold metallic (MeshStandardMaterial with metalness=0.9, roughness=0.15, color=#D4AF37, emissive=#3d2e0a)
+  - Changed lighting to gold-tinted (SpotLight #F1D28A + #D4AF37, DirectionalLight #F1D28A)
+  - Added second spotlight for richer gold reflections
+  - Fixed collision detection (cloned tempVector before multiplyScalar to avoid mutation bugs)
+  - Capped pixel ratio at 2 for performance
+  - Called initLoadingAnimation() directly instead of waiting for window 'load' event (Next.js SPA doesn't always fire native load)
+- Added UI overlay with Актив Плюс branding:
+  - Loading screen: logo + gold progress bar
+  - Top bar: gold pulsing dot + "АКТИВ ПЛЮС" + phone + consultation button
+  - Center: "ПРЕМИАЛЬНАЯ / НЕДВИЖИМОСТЬ" heading with gold outline effect + CTA buttons
+  - Bottom bar: address + interaction hint + scroll indicator
+  - Custom cursor: gold circle + follow ring with mix-blend-difference
+  - Mouse glow effect: subtle gold radial gradient following cursor
+- Updated HeroSection.tsx to use festivity-hero via dynamic import (ssr:false)
+  - Loading fallback: logo + gold progress bar + "Загрузка 3D" text
+- Added CSS variables --black-color and --white-color to :root
+- Build verified successfully
+
+Stage Summary:
+- Hero section now uses interactive 3D gold spheres with physics (collision detection, mouse repulsion, breathing animation)
+- 100 gold metallic spheres with loading entrance animation (rise → settle → position)
+- Drag-to-rotate camera interaction + hover-to-push sphere interaction
+- Full Актив Плюс branding overlay with glass-panel design elements
+- SSR-safe via next/dynamic with ssr:false
+- Custom gold cursor elements
+- Pure Three.js (no React Three Fiber) — lighter bundle for this component

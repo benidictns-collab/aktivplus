@@ -48,6 +48,8 @@
 }
 
 :root {
+  --black-color: #0B0B0B;
+  --white-color: #FAFAFA;
   --radius: 0.625rem;
   --background: #0B0B0B;
   --foreground: #FAFAFA;
