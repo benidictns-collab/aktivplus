@@ -322,3 +322,31 @@ html {
     letter-spacing: 0.25em;
   }
 }
+
+/* ═══════════════════════════════════════════
+   Mobile Responsive Fixes
+   ═══════════════════════════════════════════ */
+
+/* Prevent text overflow on all screens */
+html, body {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Better touch targets on mobile */
+@media (max-width: 768px) {
+  button, a {
+    min-height: 44px;
+  }
+
+  /* Prevent horizontal scroll from long words */
+  h1, h2, h3, h4, h5, h6, p, span, li {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  /* Smaller section padding on mobile */
+  section {
+    overflow-x: hidden;
+  }
+}

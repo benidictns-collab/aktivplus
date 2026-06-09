@@ -67,18 +67,16 @@ export default function Header() {
         transition={{ duration: 0.8, ease: 'easeOut' }}
       >
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-10 pt-2">
-          <div className="grid grid-cols-3 items-center py-1">
+          <div className="flex items-center justify-between py-1">
             {/* Logo */}
-            <div className="flex justify-start">
-              <motion.button
-                onClick={() => handleNavigate('home')}
-                className="flex items-center z-60 relative mt-1"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <img src="/logo.png" alt="Актив Плюс" className="w-32 md:w-44 h-auto" />
-              </motion.button>
-            </div>
+            <motion.button
+              onClick={() => handleNavigate('home')}
+              className="flex items-center z-60 relative"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <img src="/logo.png" alt="Актив Плюс" className="w-24 sm:w-32 md:w-44 h-auto" />
+            </motion.button>
 
             {/* Desktop Nav — GradientMenu (centered) */}
             <nav className="hidden xl:flex items-center justify-center">

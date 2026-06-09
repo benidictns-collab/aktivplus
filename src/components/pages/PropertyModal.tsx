@@ -118,12 +118,12 @@ export default function PropertyModal() {
             </button>
 
             {/* Thumbnails */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 overflow-x-auto max-w-[90vw] px-2 scrollbar-hide">
               {property.images.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setCurrentImage(i)}
-                  className={`w-16 h-11 rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`w-12 h-8 sm:w-16 sm:h-11 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${
                     i === currentImage ? 'border-[#D4AF37]' : 'border-white/20 opacity-60 hover:opacity-100'
                   }`}
                 >
@@ -141,9 +141,9 @@ export default function PropertyModal() {
           </div>
 
           {/* ─── Content ─── */}
-          <div className="p-6 md:p-8 lg:p-10">
+          <div className="p-4 sm:p-6 md:p-8 lg:p-10">
             {/* Header: Title + Price */}
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 md:gap-4 mb-6 md:mb-8">
               <div className="min-w-0 flex-1">
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 break-words">
                   {property.title}

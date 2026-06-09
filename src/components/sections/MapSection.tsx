@@ -34,16 +34,16 @@ export default function MapSection() {
               referrerPolicy="no-referrer-when-downgrade"
               title="Карта — Актив Плюс"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0B0B0B]/80 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0B0B0B]/80 via-transparent to-transparent pointer-events-none hidden md:block" />
 
-            {/* Info card overlay */}
-            <div className="absolute top-6 left-6 md:top-10 md:left-10 bg-[#141414]/95 backdrop-blur-lg rounded-2xl border border-[#D4AF37]/20 p-6 md:p-8 max-w-sm">
+            {/* Info card overlay — on mobile: bottom overlay, on desktop: top-left card */}
+            <div className="absolute bottom-0 left-0 right-0 md:bottom-auto md:left-10 md:right-auto md:top-10 bg-[#141414]/95 backdrop-blur-lg rounded-t-2xl md:rounded-2xl border border-[#D4AF37]/20 p-5 md:p-8 md:max-w-sm">
               <div className="flex items-center gap-3 mb-5">
                 <img src="/logo.png" alt="Актив Плюс" className="h-8 w-auto" />
                 <span className="gold-text text-lg font-bold">АКТИВ ПЛЮС</span>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 <div className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 text-[#D4AF37] shrink-0 mt-0.5" />
                   <div>

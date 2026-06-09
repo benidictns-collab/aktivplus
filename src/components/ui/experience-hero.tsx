@@ -220,12 +220,12 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
       {/* Content overlay */}
       <div
         ref={revealRef}
-        className="relative z-10 w-full flex flex-col md:flex-row px-6 md:px-14 lg:px-20 pt-28 md:pt-32 pb-6 md:pb-10 min-h-screen items-center md:items-stretch gap-10"
+        className="relative z-10 w-full flex flex-col md:flex-row px-5 sm:px-6 md:px-14 lg:px-20 pt-24 sm:pt-28 md:pt-32 pb-20 md:pb-10 min-h-screen items-center md:items-stretch gap-6 md:gap-10"
       >
         {/* ── Left Column ── */}
-        <div className="flex-1 min-w-0 flex flex-col justify-center pb-12 md:pb-8 w-full">
+        <div className="flex-1 min-w-0 flex flex-col justify-center pb-4 md:pb-8 w-full">
           {/* Main heading */}
-          <div className="max-w-4xl pr-12">
+          <div className="max-w-4xl pr-0 sm:pr-12">
             <div className="flex items-center gap-3 mb-6">
               <div className="relative w-2.5 h-2.5 bg-[#D4AF37] rounded-full">
                 <div className="absolute inset-0 bg-[#D4AF37] rounded-full animate-ping opacity-30" />
@@ -235,7 +235,7 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
               </span>
             </div>
 
-            <h1 className="text-[clamp(2.8rem,7.5vw,9rem)] font-black leading-[0.9] tracking-tighter text-white uppercase">
+            <h1 className="text-[clamp(2.2rem,9vw,9rem)] font-black leading-[0.9] tracking-tighter text-white uppercase">
               ПРЕМИАЛЬНАЯ
               <br />
               <span className="text-outline-gold">НЕДВИЖИМОСТЬ</span>
@@ -262,7 +262,7 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
         </div>
 
         {/* ── Right Side Deck ── */}
-        <div className="w-full md:w-80 lg:w-96 flex-shrink-0 flex flex-col gap-4 justify-center z-20">
+        <div className="w-full md:w-80 lg:w-96 flex-shrink-0 flex flex-col gap-3 sm:gap-4 justify-center z-20">
           {/* Panel 1: Availability */}
           <div className="command-cell glass-panel p-6 sm:p-7">
             <span className="font-mono text-[9px] text-[#D4AF37]/50 uppercase tracking-widest block mb-3">
@@ -325,9 +325,9 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
       </div>
 
       {/* Bottom bar: location + scroll hint */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 px-6 md:px-14 lg:px-20 pb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-white/30 text-xs font-mono uppercase tracking-wider">
+      <div className="absolute bottom-0 left-0 right-0 z-20 px-5 sm:px-6 md:px-14 lg:px-20 pb-4 sm:pb-6">
+        <div className="flex items-center justify-between gap-3">
+          <div className="hidden sm:flex items-center gap-2 text-white/30 text-xs font-mono uppercase tracking-wider">
             <MapPin className="w-3 h-3 text-[#D4AF37]" />
             Ростов-на-Дону, ул. Обороны, 49
           </div>

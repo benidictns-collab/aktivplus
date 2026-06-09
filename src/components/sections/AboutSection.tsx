@@ -80,18 +80,18 @@ export default function AboutSection() {
 
         <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
           {/* Image */}
-          <div className="relative">
+          <div className="relative max-w-lg mx-auto lg:max-w-none">
             <div className="relative rounded-2xl overflow-hidden">
               <img
                 src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069"
                 alt="О компании Актив Плюс"
-                className="w-full h-[400px] md:h-[500px] object-cover"
+                className="w-full h-[300px] md:h-[500px] object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0B]/60 to-transparent" />
             </div>
             {/* Gold accent corner */}
-            <div className="absolute -top-4 -left-4 w-20 h-20 border-t-2 border-l-2 border-[#D4AF37] rounded-tl-2xl" />
-            <div className="absolute -bottom-4 -right-4 w-20 h-20 border-b-2 border-r-2 border-[#D4AF37] rounded-br-2xl" />
+            <div className="absolute -top-3 -left-3 sm:-top-4 sm:-left-4 w-16 sm:w-20 h-16 sm:h-20 border-t-2 border-l-2 border-[#D4AF37] rounded-tl-2xl" />
+            <div className="absolute -bottom-3 -right-3 sm:-bottom-4 sm:-right-4 w-16 sm:w-20 h-16 sm:h-20 border-b-2 border-r-2 border-[#D4AF37] rounded-br-2xl" />
           </div>
 
           {/* Text Content */}
