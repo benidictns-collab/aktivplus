@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { MapPin, Maximize, BedDouble, Heart, Search, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,11 +23,7 @@ export default function ObjectsPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#0B0B0B] via-[#0B0B0B]/80 to-transparent" />
         </div>
         <div className="max-w-7xl mx-auto px-4 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
+          <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="h-px w-12 bg-[#D4AF37]" />
               <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">Портфолио</span>
@@ -39,19 +34,14 @@ export default function ObjectsPage() {
             <p className="text-white/60 text-lg max-w-2xl">
               Лучшие предложения на рынке недвижимости Ростова-на-Дону
             </p>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Quick Search */}
       <section className="py-8 bg-[#0B0B0B]">
         <div className="max-w-7xl mx-auto px-4">
-          <motion.div
-            className="bg-[#141414] rounded-2xl border border-white/5 p-6 flex flex-col md:flex-row gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
+          <div className="bg-[#141414] rounded-2xl border border-white/5 p-6 flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
               <Input
@@ -65,7 +55,7 @@ export default function ObjectsPage() {
             >
               Расширенный поиск
             </Button>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -73,15 +63,10 @@ export default function ObjectsPage() {
       <section className="py-16 bg-[#0B0B0B]">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {properties.map((property, i) => (
-              <motion.div
+            {properties.map((property) => (
+              <div
                 key={property.id}
-                className="premium-card group relative overflow-hidden rounded-2xl bg-[#141414] border border-white/5 cursor-pointer"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                whileHover={{ y: -8 }}
+                className="premium-card group relative overflow-hidden rounded-2xl bg-[#141414] border border-white/5 cursor-pointer hover:-translate-y-2 transition-transform duration-300"
                 onClick={() => openPropertyModal(property.id)}
               >
                 <div className="relative h-64 overflow-hidden">
@@ -128,7 +113,7 @@ export default function ObjectsPage() {
                     </Button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -137,36 +122,30 @@ export default function ObjectsPage() {
       {/* CTA */}
       <section className="py-20 bg-[#141414]">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Не нашли подходящий <span className="gold-text">объект?</span>
-            </h2>
-            <p className="text-white/60 max-w-xl mx-auto mb-8">
-              Оставьте заявку и мы подберём для вас идеальный вариант недвижимости
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button
-                size="lg"
-                className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold px-8"
-                onClick={() => navigate('contacts')}
-              >
-                Оставить заявку
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black font-semibold px-8"
-                onClick={() => navigate('catalog')}
-              >
-                Каталог объектов
-              </Button>
-            </div>
-          </motion.div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Не нашли подходящий <span className="gold-text">объект?</span>
+          </h2>
+          <p className="text-white/60 max-w-xl mx-auto mb-8">
+            Оставьте заявку и мы подберём для вас идеальный вариант недвижимости
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button
+              size="lg"
+              className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold px-8"
+              onClick={() => navigate('contacts')}
+            >
+              Оставить заявку
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black font-semibold px-8"
+              onClick={() => navigate('catalog')}
+            >
+              Каталог объектов
+            </Button>
+          </div>
         </div>
       </section>
     </div>

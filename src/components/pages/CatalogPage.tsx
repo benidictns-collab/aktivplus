@@ -73,7 +73,7 @@ export default function CatalogPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#0B0B0B] via-[#0B0B0B]/80 to-transparent" />
         </div>
         <div className="max-w-7xl mx-auto px-4 relative">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+          <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="h-px w-12 bg-[#D4AF37]" />
               <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">Каталог</span>
@@ -81,7 +81,7 @@ export default function CatalogPage() {
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
               Каталог <span className="gold-text">объектов</span>
             </h1>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -119,12 +119,7 @@ export default function CatalogPage() {
 
           {/* Expanded Filters */}
           {showFilters && (
-            <motion.div
-              className="bg-[#141414] rounded-2xl border border-white/5 p-6 mb-6"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-            >
+            <div className="bg-[#141414] rounded-2xl border border-white/5 p-6 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-white font-semibold">Параметры поиска</h3>
                 <button onClick={() => setShowFilters(false)} className="text-white/40 hover:text-white">
@@ -275,22 +270,17 @@ export default function CatalogPage() {
                   </select>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* Properties Grid */}
           <div className={viewMode === 'grid' ? 'grid md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
-            {filteredProperties.map((property, i) => (
-              <motion.div
+            {filteredProperties.map((property) => (
+              <div
                 key={property.id}
-                className={`premium-card group overflow-hidden rounded-2xl bg-[#141414] border border-white/5 cursor-pointer ${
+                className={`premium-card group overflow-hidden rounded-2xl bg-[#141414] border border-white/5 cursor-pointer hover:-translate-y-1 transition-transform duration-300 ${
                   viewMode === 'list' ? 'flex' : ''
                 }`}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                whileHover={{ y: -4 }}
                 onClick={() => openPropertyModal(property.id)}
               >
                 {/* Image section */}
@@ -355,7 +345,7 @@ export default function CatalogPage() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
 

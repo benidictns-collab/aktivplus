@@ -45,14 +45,8 @@ export default function ReviewsSection() {
   return (
     <section className="py-20 md:py-28 bg-[#0B0B0B] relative">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Section Header */}
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
+        {/* Section Header — always visible */}
+        <div className="text-center mb-16">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="h-px w-12 bg-[#D4AF37]" />
             <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">
@@ -63,7 +57,7 @@ export default function ReviewsSection() {
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
             Что говорят <span className="gold-text">клиенты</span>
           </h2>
-        </motion.div>
+        </div>
 
         {/* Review Card */}
         <div className="max-w-3xl mx-auto">

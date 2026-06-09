@@ -48,13 +48,8 @@ export default function ApplicationFormSection() {
 
       <div className="max-w-7xl mx-auto px-4 relative">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left side - Text */}
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
+          {/* Left side - Text — always visible */}
+          <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="h-px w-12 bg-[#D4AF37]" />
               <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">
@@ -89,15 +84,10 @@ export default function ApplicationFormSection() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Right side - Form */}
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
+          {/* Right side - Form — always visible */}
+          <div>
             <div className="bg-[#141414] rounded-2xl border border-white/5 p-8 md:p-10">
               {isSuccess ? (
                 <motion.div
@@ -175,7 +165,7 @@ export default function ApplicationFormSection() {
                 </form>
               )}
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

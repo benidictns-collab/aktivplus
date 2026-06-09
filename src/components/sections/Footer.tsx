@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin, MessageCircle } from 'lucide-react';
 import { useNavigationStore, type PageName } from '@/store/navigation';
 
@@ -49,13 +48,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Logo & Info */}
-          <motion.div
-            className="lg:col-span-2"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-6">
               <img src="/logo.png" alt="Актив Плюс" className="h-10 w-auto" />
               <span className="gold-text text-xl font-bold tracking-wider">АКТИВ ПЛЮС</span>
@@ -91,17 +84,11 @@ export default function Footer() {
                 <Phone className="w-4 h-4" />
               </a>
             </div>
-          </motion.div>
+          </div>
 
           {/* Link Columns */}
-          {footerLinks.map((col, i) => (
-            <motion.div
-              key={col.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: (i + 1) * 0.1 }}
-            >
+          {footerLinks.map((col) => (
+            <div key={col.title}>
               <h4 className="text-white font-semibold mb-4">{col.title}</h4>
               <ul className="space-y-2.5">
                 {col.links.map((link) => (
@@ -115,7 +102,7 @@ export default function Footer() {
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </div>
           ))}
         </div>
 

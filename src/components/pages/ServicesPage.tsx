@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle, Shield, Clock, UserCheck, FileText, Search, Handshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { services } from '@/lib/data';
@@ -41,7 +40,7 @@ export default function ServicesPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#0B0B0B] via-[#0B0B0B]/80 to-transparent" />
         </div>
         <div className="max-w-7xl mx-auto px-4 relative">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+          <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="h-px w-12 bg-[#D4AF37]" />
               <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">Услуги</span>
@@ -52,7 +51,7 @@ export default function ServicesPage() {
             <p className="text-white/60 text-lg max-w-2xl">
               Полный спектр услуг для решения любых задач в сфере недвижимости
             </p>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -60,14 +59,10 @@ export default function ServicesPage() {
       <section className="py-20 bg-[#0B0B0B]">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.map((service, i) => (
-              <motion.div
+            {services.map((service) => (
+              <div
                 key={service.id}
                 className="premium-card group relative overflow-hidden rounded-2xl bg-[#141414] border border-white/5"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
@@ -88,7 +83,7 @@ export default function ServicesPage() {
                   </h3>
                   <p className="text-white/60 text-sm leading-relaxed">{service.description}</p>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -98,7 +93,7 @@ export default function ServicesPage() {
       <section className="py-20 bg-[#141414]">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+            <div>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
                 Почему <span className="gold-text">выбирают нас</span>
               </h2>
@@ -106,22 +101,15 @@ export default function ServicesPage() {
                 Мы предоставляем комплексный подход к решению любых задач в сфере недвижимости
               </p>
               <div className="space-y-4">
-                {serviceAdvantages.map((adv, i) => (
-                  <motion.div
-                    key={adv}
-                    className="flex items-center gap-3"
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                  >
+                {serviceAdvantages.map((adv) => (
+                  <div key={adv} className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-[#D4AF37] shrink-0" />
                     <span className="text-white/80">{adv}</span>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+            </div>
+            <div>
               <div className="rounded-2xl overflow-hidden">
                 <img
                   src="https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?q=80&w=2070"
@@ -129,7 +117,7 @@ export default function ServicesPage() {
                   className="w-full h-[400px] object-cover"
                 />
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -137,20 +125,16 @@ export default function ServicesPage() {
       {/* Work Stages */}
       <section className="py-20 bg-[#0B0B0B]">
         <div className="max-w-7xl mx-auto px-4">
-          <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Этапы <span className="gold-text">работы</span>
             </h2>
-          </motion.div>
+          </div>
           <div className="grid md:grid-cols-5 gap-4">
             {workStages.map((stage, i) => (
-              <motion.div
+              <div
                 key={stage.title}
                 className="text-center p-6 rounded-2xl bg-[#141414] border border-white/5 relative"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
               >
                 <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-4">
                   <stage.icon className="w-6 h-6 text-[#D4AF37]" />
@@ -158,7 +142,7 @@ export default function ServicesPage() {
                 <div className="text-[#D4AF37] text-sm font-bold mb-2">0{i + 1}</div>
                 <h3 className="text-white font-semibold mb-2">{stage.title}</h3>
                 <p className="text-white/50 text-sm">{stage.desc}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>

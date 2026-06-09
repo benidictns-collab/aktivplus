@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigationStore } from '@/store/navigation';
 
 // Section components for the home page
@@ -62,17 +61,7 @@ export default function MainPage() {
       <Header />
 
       <main className="flex-1">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentPage}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4, ease: 'easeInOut' }}
-          >
-            <PageComponent />
-          </motion.div>
-        </AnimatePresence>
+        <PageComponent />
       </main>
 
       <Footer />

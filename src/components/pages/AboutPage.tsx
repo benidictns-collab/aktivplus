@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Shield, CheckCircle, Scale, UserCheck, Clock, RotateCcw, Award, Users, Building, Heart } from 'lucide-react';
 import ApplicationFormSection from '@/components/sections/ApplicationFormSection';
 
@@ -35,11 +34,7 @@ export default function AboutPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#0B0B0B] via-[#0B0B0B]/80 to-transparent" />
         </div>
         <div className="max-w-7xl mx-auto px-4 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
+          <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="h-px w-12 bg-[#D4AF37]" />
               <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">О компании</span>
@@ -50,7 +45,7 @@ export default function AboutPage() {
             <p className="text-white/60 text-lg max-w-2xl">
               Ваш надёжный партнёр на рынке премиальной недвижимости Ростова-на-Дону с 2009 года
             </p>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -58,11 +53,7 @@ export default function AboutPage() {
       <section className="py-20 bg-[#0B0B0B]">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
+            <div>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
                 Наша <span className="gold-text">история</span>
               </h2>
@@ -81,13 +72,8 @@ export default function AboutPage() {
                 единомышленников, которая помогает людям принимать важные жизненные решения,
                 обеспечивая комфорт и безопасность на каждом этапе.
               </p>
-            </motion.div>
-            <motion.div
-              className="relative"
-              initial={{ opacity: 0, x: 40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
+            </div>
+            <div className="relative">
               <div className="rounded-2xl overflow-hidden">
                 <img
                   src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069"
@@ -96,7 +82,7 @@ export default function AboutPage() {
                 />
               </div>
               <div className="absolute -bottom-4 -right-4 w-24 h-24 border-b-2 border-r-2 border-[#D4AF37] rounded-br-2xl" />
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -104,12 +90,7 @@ export default function AboutPage() {
       {/* Mission */}
       <section className="py-20 bg-[#141414]">
         <div className="max-w-7xl mx-auto px-4">
-          <motion.div
-            className="text-center max-w-3xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
+          <div className="text-center max-w-3xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
               Наша <span className="gold-text">миссия</span>
             </h2>
@@ -119,39 +100,30 @@ export default function AboutPage() {
               внимание к деталям. Мы верим, что покупка недвижимости — это не просто сделка,
               а важный жизненный этап, который должен проходить в атмосфере доверия и комфорта.
             </p>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Values */}
       <section className="py-20 bg-[#0B0B0B]">
         <div className="max-w-7xl mx-auto px-4">
-          <motion.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
+          <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Наши <span className="gold-text">ценности</span>
             </h2>
-          </motion.div>
+          </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {values.map((val, i) => (
-              <motion.div
+            {values.map((val) => (
+              <div
                 key={val.title}
                 className="p-6 rounded-2xl bg-[#141414] border border-white/5 hover:border-[#D4AF37]/30 transition-all text-center"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
               >
                 <div className="w-14 h-14 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-4">
                   <val.icon className="w-7 h-7 text-[#D4AF37]" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">{val.title}</h3>
                 <p className="text-white/60 text-sm">{val.desc}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -160,35 +132,26 @@ export default function AboutPage() {
       {/* Team */}
       <section className="py-20 bg-[#141414]">
         <div className="max-w-7xl mx-auto px-4">
-          <motion.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
+          <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Наша <span className="gold-text">команда</span>
             </h2>
             <p className="text-white/60 max-w-2xl mx-auto">
               Профессионалы с многолетним опытом работы в сфере недвижимости
             </p>
-          </motion.div>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {team.map((member, i) => (
-              <motion.div
+            {team.map((member) => (
+              <div
                 key={member.name}
                 className="text-center p-4 rounded-2xl bg-[#0B0B0B] border border-white/5 hover:border-[#D4AF37]/30 transition-all"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
               >
                 <div className="w-20 h-20 rounded-full bg-[#D4AF37]/20 border-2 border-[#D4AF37] mx-auto mb-3 flex items-center justify-center">
                   <span className="text-[#D4AF37] font-bold">{member.avatar}</span>
                 </div>
                 <h4 className="text-white font-medium text-sm">{member.name}</h4>
                 <p className="text-white/50 text-xs mt-1">{member.role}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
