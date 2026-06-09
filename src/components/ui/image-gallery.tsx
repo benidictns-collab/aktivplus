@@ -18,6 +18,7 @@ interface ImageGalleryProps {
   title?: string;
   subtitle?: string;
   label?: string;
+  showHeader?: boolean;
   onImageClick?: (id: number) => void;
   onViewAll?: () => void;
 }
@@ -78,6 +79,7 @@ export default function ImageGallery({
   title = 'Популярные объекты',
   subtitle = 'Самые востребованные предложения на рынке недвижимости Ростова-на-Дону',
   label = 'Портфолио',
+  showHeader = true,
   onImageClick,
   onViewAll,
 }: ImageGalleryProps) {
@@ -100,26 +102,28 @@ export default function ImageGallery({
   // Mobile layout: 2-column grid with property info
   if (isMobile) {
     return (
-      <section className="w-full flex flex-col items-center justify-start py-12 bg-[#0B0B0B]">
-        <div className="max-w-3xl text-center px-6 mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="h-px w-8 bg-[#D4AF37]" />
-            <span className="text-[#D4AF37] text-xs font-medium tracking-[0.2em] uppercase">
-              {label}
-            </span>
-            <div className="h-px w-8 bg-[#D4AF37]" />
+      <section className="w-full flex flex-col items-center justify-start bg-[#0B0B0B]">
+        {showHeader && (
+          <div className="max-w-3xl text-center px-6 mb-8 pt-12">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="h-px w-8 bg-[#D4AF37]" />
+              <span className="text-[#D4AF37] text-xs font-medium tracking-[0.2em] uppercase">
+                {label}
+              </span>
+              <div className="h-px w-8 bg-[#D4AF37]" />
+            </div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">
+              {title.split(' ').map((word, i) =>
+                i === title.split(' ').length - 1 ? (
+                  <span key={i} className="gold-text">{' '}{word}</span>
+                ) : (
+                  <span key={i}>{word} </span>
+                )
+              )}
+            </h2>
+            <p className="text-sm text-white/50 mt-2">{subtitle}</p>
           </div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">
-            {title.split(' ').map((word, i) =>
-              i === title.split(' ').length - 1 ? (
-                <span key={i} className="gold-text">{' '}{word}</span>
-              ) : (
-                <span key={i}>{word} </span>
-              )
-            )}
-          </h2>
-          <p className="text-sm text-white/50 mt-2">{subtitle}</p>
-        </div>
+        )}
 
         <div className="w-full px-4 grid grid-cols-2 gap-3">
           {images.map((img, idx) => (
@@ -157,11 +161,10 @@ export default function ImageGallery({
           ))}
         </div>
 
-        {/* View all button */}
-        {onViewAll && (
+        {showHeader && onViewAll && (
           <button
             onClick={onViewAll}
-            className="mt-6 flex items-center gap-2 text-[#D4AF37] hover:text-[#F1D28A] text-sm font-medium transition-colors"
+            className="mt-6 mb-8 flex items-center gap-2 text-[#D4AF37] hover:text-[#F1D28A] text-sm font-medium transition-colors"
           >
             Смотреть все объекты
             <ArrowRight className="w-4 h-4" />
@@ -173,26 +176,28 @@ export default function ImageGallery({
 
   // Desktop layout: expanding panels with property details
   return (
-    <section className="w-full flex flex-col items-center justify-start py-16 bg-[#0B0B0B]">
-      <div className="max-w-3xl text-center px-6 mb-10">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="h-px w-12 bg-[#D4AF37]" />
-          <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">
-            {label}
-          </span>
-          <div className="h-px w-12 bg-[#D4AF37]" />
+    <section className="w-full flex flex-col items-center justify-start bg-[#0B0B0B]">
+      {showHeader && (
+        <div className="max-w-3xl text-center px-6 mb-10 pt-16">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="h-px w-12 bg-[#D4AF37]" />
+            <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">
+              {label}
+            </span>
+            <div className="h-px w-12 bg-[#D4AF37]" />
+          </div>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">
+            {title.split(' ').map((word, i) =>
+              i === title.split(' ').length - 1 ? (
+                <span key={i} className="gold-text">{' '}{word}</span>
+              ) : (
+                <span key={i}>{word} </span>
+              )
+            )}
+          </h2>
+          <p className="text-base text-white/50 mt-3 max-w-xl mx-auto">{subtitle}</p>
         </div>
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">
-          {title.split(' ').map((word, i) =>
-            i === title.split(' ').length - 1 ? (
-              <span key={i} className="gold-text">{' '}{word}</span>
-            ) : (
-              <span key={i}>{word} </span>
-            )
-          )}
-        </h2>
-        <p className="text-base text-white/50 mt-3 max-w-xl mx-auto">{subtitle}</p>
-      </div>
+      )}
 
       {/* Gallery */}
       <div className="flex items-center gap-2 h-[460px] w-full max-w-6xl px-4">
@@ -309,11 +314,10 @@ export default function ImageGallery({
         })}
       </div>
 
-      {/* View all link */}
-      {onViewAll && (
+      {showHeader && onViewAll && (
         <button
           onClick={onViewAll}
-          className="mt-8 flex items-center gap-2 text-[#D4AF37] hover:text-[#F1D28A] text-sm font-medium transition-colors underline underline-offset-4"
+          className="mt-8 mb-8 flex items-center gap-2 text-[#D4AF37] hover:text-[#F1D28A] text-sm font-medium transition-colors underline underline-offset-4"
         >
           Смотреть все объекты
           <ArrowRight className="w-4 h-4" />
