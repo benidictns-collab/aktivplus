@@ -76,15 +76,15 @@ export default function AdvantagesSection() {
   return (
     <div id="advantages" className="relative">
       {/* Section Header — pinned above the animation layers */}
-      <div className="relative z-30 text-center py-16 md:py-24 px-4 bg-[#0B0B0B]">
-        <div className="flex items-center justify-center gap-3 mb-4">
+      <div className="relative z-30 text-center py-20 md:py-28 px-4 bg-[#0B0B0B]">
+        <div className="flex items-center justify-center gap-3 mb-6">
           <div className="h-px w-12 bg-[#D4AF37]" />
           <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">
             Наши преимущества
           </span>
           <div className="h-px w-12 bg-[#D4AF37]" />
         </div>
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
           Почему <span className="gold-text">выбирают нас</span>
         </h2>
         <p className="text-white/50 max-w-2xl mx-auto text-base md:text-lg">
@@ -106,16 +106,16 @@ export default function AdvantagesSection() {
             >
               {/* Number & label */}
               <p
-                className="text-xs font-bold uppercase tracking-[0.2em]"
+                className="text-xs font-bold uppercase tracking-[0.2em] pb-[0.5vw]"
                 style={{ color: isGold ? 'rgba(11,11,11,0.6)' : 'rgba(212,175,55,0.7)' }}
               >
                 {adv.num} — {adv.title}
               </p>
 
-              <hr className="my-[2vw] border-none h-px" style={{ backgroundColor: adv.dividerColor }} />
+              <hr className="my-[3vw] border-none h-px" style={{ backgroundColor: adv.dividerColor }} />
 
               {/* Large title */}
-              <div>
+              <div className="py-[1vw]">
                 <h2 className="text-[clamp(2.5rem,10vw,12rem)] font-bold leading-[0.85] uppercase tracking-tight">
                   {adv.titleLarge.map((line, i) => (
                     <React.Fragment key={i}>
@@ -126,7 +126,7 @@ export default function AdvantagesSection() {
                 </h2>
               </div>
 
-              <hr className="my-[2vw] border-none h-px" style={{ backgroundColor: adv.dividerColor }} />
+              <hr className="my-[3vw] border-none h-px" style={{ backgroundColor: adv.dividerColor }} />
 
               {/* Icon + Description row */}
               <div className="flex flex-wrap gap-[3vw] items-start">
@@ -159,7 +159,7 @@ export default function AdvantagesSection() {
                 </div>
               </div>
 
-              <hr className="my-[2vw] border-none h-px" style={{ backgroundColor: adv.dividerColor }} />
+              <hr className="my-[3vw] border-none h-px" style={{ backgroundColor: adv.dividerColor }} />
 
               {/* Bottom quote — alternating sides */}
               {idx % 2 === 0 ? (
