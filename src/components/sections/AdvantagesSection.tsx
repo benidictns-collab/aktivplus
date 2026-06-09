@@ -116,7 +116,7 @@ export default function AdvantagesSection() {
 
               {/* Large title */}
               <div className="py-[1vw]">
-                <h2 className="text-[clamp(2.5rem,10vw,12rem)] font-bold leading-[0.85] uppercase tracking-tight">
+                <h2 className="text-[clamp(2.5rem,10vw,12rem)] font-bold leading-[1.05] uppercase tracking-tight">
                   {adv.titleLarge.map((line, i) => (
                     <React.Fragment key={i}>
                       {i > 0 && <br />}
