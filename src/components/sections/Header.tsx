@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Phone, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MenuVertical } from '@/components/ui/menu-vertical';
+import { GradientMenu, siteMenuConfig } from '@/components/ui/gradient-menu';
 import { useNavigationStore, type PageName } from '@/store/navigation';
 
 const navLinks: { label: string; page: PageName }[] = [
@@ -82,21 +83,16 @@ export default function Header() {
               </span>
             </motion.button>
 
-            {/* Desktop Nav */}
-            <nav className="hidden xl:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <button
-                  key={link.page}
-                  onClick={() => handleNavigate(link.page)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    currentPage === link.page
-                      ? 'text-[#D4AF37] bg-[#D4AF37]/10'
-                      : 'text-white/70 hover:text-[#D4AF37] hover:bg-white/5'
-                  }`}
-                >
-                  {link.label}
-                </button>
-              ))}
+            {/* Desktop Nav — GradientMenu */}
+            <nav className="hidden xl:flex items-center">
+              <GradientMenu
+                menuItems={navLinks.map((link, i) => ({
+                  ...siteMenuConfig[i],
+                  title: link.label,
+                  onClick: () => handleNavigate(link.page),
+                  isActive: currentPage === link.page,
+                }))}
+              />
             </nav>
 
             {/* Desktop CTA */}
