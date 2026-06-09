@@ -4,11 +4,9 @@ import React from "react";
 import {
   Home,
   Users,
-  Building2,
   LayoutGrid,
   Briefcase,
   Phone,
-  User,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -102,16 +100,10 @@ export const siteMenuConfig: {
     gradientTo: "#E8C84A",
   },
   {
-    title: "Объекты",
-    icon: Building2,
-    gradientFrom: "#B8942E",
-    gradientTo: "#D4AF37",
-  },
-  {
     title: "Каталог",
     icon: LayoutGrid,
-    gradientFrom: "#A68525",
-    gradientTo: "#C9A030",
+    gradientFrom: "#B8942E",
+    gradientTo: "#D4AF37",
   },
   {
     title: "Услуги",
@@ -124,11 +116,5 @@ export const siteMenuConfig: {
     icon: Phone,
     gradientFrom: "#F1D28A",
     gradientTo: "#D4AF37",
-  },
-  {
-    title: "Кабинет",
-    icon: User,
-    gradientFrom: "#E8C84A",
-    gradientTo: "#C9A030",
   },
 ];

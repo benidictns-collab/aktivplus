@@ -11,11 +11,9 @@ import { useNavigationStore, type PageName } from '@/store/navigation';
 const navLinks: { label: string; page: PageName }[] = [
   { label: 'Главная', page: 'home' },
   { label: 'О нас', page: 'about' },
-  { label: 'Наши объекты', page: 'objects' },
   { label: 'Каталог объектов', page: 'catalog' },
   { label: 'Услуги', page: 'services' },
   { label: 'Контакты', page: 'contacts' },
-  { label: 'Личный кабинет', page: 'cabinet' },
 ];
 
 export default function Header() {
@@ -73,14 +71,11 @@ export default function Header() {
             {/* Logo */}
             <motion.button
               onClick={() => handleNavigate('home')}
-              className="flex items-center gap-3 z-60 relative"
+              className="flex items-center z-60 relative"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <img src="/logo.png" alt="Актив Плюс" className="h-10 md:h-12 w-auto" />
-              <span className="gold-text text-lg md:text-xl font-bold tracking-wider hidden sm:block">
-                АКТИВ ПЛЮС
-              </span>
+              <img src="/logo.png" alt="Актив Плюс" className="h-12 md:h-16 w-auto" />
             </motion.button>
 
             {/* Desktop Nav — GradientMenu */}
@@ -115,8 +110,9 @@ export default function Header() {
                 variant="outline"
                 size="sm"
                 className="border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black"
+                onClick={() => handleNavigate('cabinet')}
               >
-                Обратный звонок
+                Личный кабинет
               </Button>
             </div>
 
@@ -172,8 +168,9 @@ export default function Header() {
                   variant="outline"
                   className="border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black"
                   size="lg"
+                  onClick={() => handleNavigate('cabinet')}
                 >
-                  Обратный звонок
+                  Личный кабинет
                 </Button>
               </div>
             </div>
