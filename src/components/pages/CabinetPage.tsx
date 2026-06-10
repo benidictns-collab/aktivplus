@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   User, Lock, Mail, Phone, Heart, FileText, MessageCircle, Clock,
@@ -9,7 +9,7 @@ import {
   Loader2, Building, Home, Key, Scale, Plus, Pencil, X, ImagePlus,
   Maximize, BedDouble, Car, PaintBucket, Sun, Calendar,
   GraduationCap, TreePine, ShoppingBag, Bus, ChevronLeft,
-  UserPlus, Ban
+  UserPlus, Ban, Upload
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -205,6 +205,8 @@ export default function CabinetPage() {
   const [formStep, setFormStep] = useState(1);
   const [formData, setFormData] = useState<PropertyFormData>(emptyForm);
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [editingProperty, setEditingProperty] = useState<PropertyDB | null>(null);
 
   // All properties (for catalog integration)
@@ -414,6 +416,51 @@ export default function CabinetPage() {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingImage(true);
+    try {
+      for (const file of Array.from(files)) {
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+        if (!allowedTypes.includes(file.type)) {
+          toast({ title: 'Ошибка', description: `Файл "${file.name}" — недопустимый формат. Допускаются JPEG, PNG, WebP`, variant: 'destructive' });
+          continue;
+        }
+        // Validate file size (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          toast({ title: 'Ошибка', description: `Файл "${file.name}" слишком большой (макс. 10 МБ)`, variant: 'destructive' });
+          continue;
+        }
+
+        const uploadForm = new FormData();
+        uploadForm.append('file', file);
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadForm,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setFormData(prev => ({ ...prev, images: [...prev.images, data.url] }));
+          toast({ title: 'Фото загружено', description: file.name });
+        } else {
+          const data = await res.json();
+          toast({ title: 'Ошибка загрузки', description: data.error || 'Не удалось загрузить файл', variant: 'destructive' });
+        }
+      }
+    } catch {
+      toast({ title: 'Ошибка соединения', description: 'Не удалось загрузить фото', variant: 'destructive' });
+    } finally {
+      setUploadingImage(false);
+      // Reset file input so the same file can be re-selected
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const removeImage = (index: number) => {
     setFormData(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
   };
@@ -423,6 +470,7 @@ export default function CabinetPage() {
     setFormStep(1);
     setEditingProperty(null);
     setNewImageUrl('');
+    setUploadingImage(false);
     setShowPropertyForm(false);
   };
 
@@ -982,28 +1030,54 @@ export default function CabinetPage() {
 
                           {/* Images */}
                           <div>
-                            <label className="text-white/50 text-sm mb-1.5 block">Изображения</label>
+                            <label className="text-white/50 text-sm mb-1.5 block">Фотографии объекта</label>
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              multiple
+                              onChange={handleFileUpload}
+                              className="hidden"
+                            />
                             <div className="flex gap-2 mb-3">
-                              <Input value={newImageUrl} onChange={e => setNewImageUrl(e.target.value)}
-                                placeholder="URL изображения"
-                                className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
-                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addImage(); } }} />
-                              <Button onClick={addImage} variant="outline"
-                                className="border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black shrink-0">
-                                <ImagePlus className="w-4 h-4" />
+                              <Button
+                                onClick={() => fileInputRef.current?.click()}
+                                variant="outline"
+                                disabled={uploadingImage}
+                                className="border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black w-full h-12"
+                              >
+                                {uploadingImage ? (
+                                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                ) : (
+                                  <Upload className="w-5 h-5 mr-2" />
+                                )}
+                                {uploadingImage ? 'Загрузка...' : 'Выбрать фото'}
                               </Button>
                             </div>
+                            <p className="text-white/30 text-xs mb-3">JPEG, PNG, WebP — до 10 МБ. Можно выбрать несколько файлов.</p>
                             {formData.images.length > 0 && (
-                              <div className="flex gap-2 flex-wrap">
+                              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                                 {formData.images.map((img, i) => (
-                                  <div key={i} className="relative w-20 h-16 rounded-lg overflow-hidden group">
+                                  <div key={i} className="relative aspect-[4/3] rounded-lg overflow-hidden group border border-white/10">
                                     <img src={img} alt="" className="w-full h-full object-cover" />
                                     <button onClick={() => removeImage(i)}
                                       className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                      <X className="w-4 h-4 text-white" />
+                                      <X className="w-5 h-5 text-white" />
                                     </button>
+                                    <div className="absolute top-1 left-1 bg-black/60 text-white/70 text-[10px] px-1 rounded">
+                                      {i + 1}
+                                    </div>
                                   </div>
                                 ))}
+                                {/* Add more button */}
+                                <button
+                                  onClick={() => fileInputRef.current?.click()}
+                                  disabled={uploadingImage}
+                                  className="aspect-[4/3] rounded-lg border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-1 text-white/30 hover:text-[#D4AF37] hover:border-[#D4AF37]/30 transition-colors"
+                                >
+                                  <Plus className="w-5 h-5" />
+                                  <span className="text-[10px]">Ещё</span>
+                                </button>
                               </div>
                             )}
                           </div>
