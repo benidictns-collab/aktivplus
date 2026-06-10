@@ -370,7 +370,7 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
         <div className="flex items-center justify-between gap-3">
           <div className="hidden sm:flex items-center gap-2 text-white/30 text-xs font-mono uppercase tracking-wider">
             <MapPin className="w-3 h-3 text-[#D4AF37]" />
-            Ростов-на-Дону, ул. Обороны, 49
+            Ростов-на-Дону, ул. Обороны д. 49/22
           </div>
           <div className="flex items-center gap-3">
             <Button

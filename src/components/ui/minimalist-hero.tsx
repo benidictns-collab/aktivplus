@@ -248,7 +248,7 @@ export default function MinimalistHero({ onNavigate }: MinimalistHeroProps) {
               </div>
               <div className="flex items-center gap-2 text-white/50 text-sm">
                 <MapPin className="w-4 h-4 text-[#D4AF37]" />
-                Ростов-на-Дону, ул. Обороны, 49
+                Ростов-на-Дону, ул. Обороны д. 49/22
               </div>
             </motion.div>
           </div>

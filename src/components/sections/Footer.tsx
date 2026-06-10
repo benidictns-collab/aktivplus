@@ -60,7 +60,7 @@ export default function Footer() {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-white/60 text-sm">
                 <MapPin className="w-4 h-4 text-[#D4AF37]" />
-                г. Ростов-на-Дону, ул. Обороны, 49
+                г. Ростов-на-Дону, ул. Обороны д. 49/22
               </div>
               <a href="tel:+78630000000" className="flex items-center gap-3 text-white/60 text-sm hover:text-[#D4AF37] transition-colors">
                 <Phone className="w-4 h-4 text-[#D4AF37]" />

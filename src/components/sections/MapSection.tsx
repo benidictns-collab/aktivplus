@@ -48,7 +48,7 @@ export default function MapSection() {
                   <MapPin className="w-5 h-5 text-[#D4AF37] shrink-0 mt-0.5" />
                   <div>
                     <div className="text-white text-sm font-medium">Адрес</div>
-                    <div className="text-white/60 text-sm">г. Ростов-на-Дону, ул. Обороны, 49</div>
+                    <div className="text-white/60 text-sm">г. Ростов-на-Дону, ул. Обороны д. 49/22</div>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

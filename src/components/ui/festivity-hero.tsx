@@ -551,7 +551,7 @@ export const Component = ({ onNavigate }: FestivityHeroProps) => {
         <div className="flex items-center justify-between hide-text transition-opacity duration-1000" style={{ opacity: 0 }}>
           <div className="flex items-center gap-2 text-white/30 text-xs font-mono uppercase tracking-wider pointer-events-auto">
             <MapPin className="w-3 h-3 text-[#D4AF37]" />
-            Ростов-на-Дону, ул. Обороны, 49
+            Ростов-на-Дону, ул. Обороны д. 49/22
           </div>
           <div className="flex items-center gap-6">
             <span className="text-white/20 text-[10px] font-mono uppercase tracking-widest hidden md:block">
