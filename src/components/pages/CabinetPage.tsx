@@ -671,7 +671,7 @@ export default function CabinetPage() {
      ═══════════════════════════════════════════════════════ */
   if (view === 'login') {
     return (
-      <div className="pt-20 min-h-screen bg-[#0B0B0B] flex items-center justify-center px-4">
+      <div className="pt-28 min-h-screen bg-[#0B0B0B] flex items-center justify-center px-4">
         <motion.div className="w-full max-w-md" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
           <div className="bg-[#141414] rounded-2xl border border-white/5 p-8">
             <div className="text-center mb-8">
@@ -735,7 +735,7 @@ export default function CabinetPage() {
      ═══════════════════════════════════════════════════════ */
   if (view === 'register') {
     return (
-      <div className="pt-20 min-h-screen bg-[#0B0B0B] flex items-center justify-center px-4">
+      <div className="pt-28 min-h-screen bg-[#0B0B0B] flex items-center justify-center px-4">
         <motion.div className="w-full max-w-md" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
           <div className="bg-[#141414] rounded-2xl border border-white/5 p-8">
             <div className="text-center mb-8">
@@ -797,7 +797,7 @@ export default function CabinetPage() {
   const displayProperties = user.role === 'admin' ? allProperties : (user.properties || []);
 
   return (
-    <div className="pt-20 min-h-screen bg-[#0B0B0B]">
+    <div className="pt-28 min-h-screen bg-[#0B0B0B]">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
@@ -828,7 +828,7 @@ export default function CabinetPage() {
 
         <div className="grid lg:grid-cols-4 gap-6">
           {/* ── Sidebar ── */}
-          <div className="bg-[#141414] rounded-2xl border border-white/5 p-4 h-fit lg:sticky lg:top-24">
+          <div className="bg-[#141414] rounded-2xl border border-white/5 p-4 h-fit lg:sticky lg:top-32">
             <nav className="space-y-1">
               {clientTabs.map((tab) => (
                 <button
