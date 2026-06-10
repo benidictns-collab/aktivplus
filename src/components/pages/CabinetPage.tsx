@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   User, Lock, Mail, Phone, Heart, FileText, MessageCircle, Clock,
   Settings, LogOut, Eye, EyeOff, ShieldCheck, ShieldOff, Users, BarChart3,
@@ -62,6 +62,7 @@ interface UserData {
   phone: string | null;
   role: string;
   avatar: string | null;
+  blocked: boolean;
   createdAt: string;
   favorites: { id: string; propertyId: number; createdAt: string }[];
   applications: {
@@ -645,21 +646,25 @@ export default function CabinetPage() {
   }, []);
 
   /* ─── Tabs config ───────────────────────────────────── */
-  const clientTabs: { id: TabId; label: string; icon: React.ElementType }[] = [
-    { id: 'favorites', label: 'Избранное', icon: Heart },
-    { id: 'applications', label: 'Мои заявки', icon: FileText },
-    { id: 'messages', label: 'Сообщения', icon: MessageCircle },
-    { id: 'settings', label: 'Настройки', icon: Settings },
-  ];
-
-  if (user?.role === 'manager') {
-    clientTabs.unshift({ id: 'properties', label: 'Мои объекты', icon: Building });
-  }
-
-  if (user?.role === 'admin') {
-    clientTabs.unshift({ id: 'properties', label: 'Все объекты', icon: Building });
-    clientTabs.push({ id: 'admin', label: 'Управление', icon: ShieldCheck });
-  }
+  const clientTabs: { id: TabId; label: string; icon: React.ElementType }[] = React.useMemo(() => {
+    const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [];
+    if (user?.role === 'manager') {
+      tabs.push({ id: 'properties', label: 'Мои объекты', icon: Building });
+    }
+    if (user?.role === 'admin') {
+      tabs.push({ id: 'properties', label: 'Все объекты', icon: Building });
+    }
+    tabs.push(
+      { id: 'favorites', label: 'Избранное', icon: Heart },
+      { id: 'applications', label: 'Мои заявки', icon: FileText },
+      { id: 'messages', label: 'Сообщения', icon: MessageCircle },
+      { id: 'settings', label: 'Настройки', icon: Settings },
+    );
+    if (user?.role === 'admin') {
+      tabs.push({ id: 'admin', label: 'Управление', icon: ShieldCheck });
+    }
+    return tabs;
+  }, [user?.role]);
 
   /* ═══════════════════════════════════════════════════════
      LOGIN VIEW
@@ -794,975 +799,967 @@ export default function CabinetPage() {
   return (
     <div className="pt-20 min-h-screen bg-[#0B0B0B]">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-[#D4AF37]/20 border-2 border-[#D4AF37] flex items-center justify-center">
-                <span className="text-[#D4AF37] font-bold text-lg">
-                  {(user.name || user.email)[0].toUpperCase()}
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-[#D4AF37]/20 border-2 border-[#D4AF37] flex items-center justify-center shrink-0">
+              <span className="text-[#D4AF37] font-bold text-lg">
+                {(user.name || user.email)[0].toUpperCase()}
+              </span>
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-2xl md:text-3xl font-bold text-white truncate">
+                {user.name || 'Пользователь'}
+              </h1>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${roleBadgeColor}`}>
+                  {roleLabel}
                 </span>
-              </div>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-white">
-                  {user.name || 'Пользователь'}
-                </h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${roleBadgeColor}`}>
-                    {roleLabel}
-                  </span>
-                  <span className="text-white/40 text-sm">{user.email}</span>
-                </div>
+                <span className="text-white/40 text-sm truncate">{user.email}</span>
               </div>
             </div>
-            <Button variant="outline"
-              className="border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black"
-              onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" /> Выйти
-            </Button>
+          </div>
+          <Button variant="outline"
+            className="border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black shrink-0"
+            onClick={handleLogout}>
+            <LogOut className="w-4 h-4 mr-2" /> Выйти
+          </Button>
+        </div>
+
+        <div className="grid lg:grid-cols-4 gap-6">
+          {/* ── Sidebar ── */}
+          <div className="bg-[#141414] rounded-2xl border border-white/5 p-4 h-fit lg:sticky lg:top-24">
+            <nav className="space-y-1">
+              {clientTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${
+                    activeTab === tab.id
+                      ? 'bg-[#D4AF37]/10 text-[#D4AF37]'
+                      : 'text-white/60 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <tab.icon className="w-5 h-5" />
+                  {tab.label}
+                  {tab.id === 'favorites' && user.favorites.length > 0 && (
+                    <span className="ml-auto text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-1.5 py-0.5 rounded-full">
+                      {user.favorites.length}
+                    </span>
+                  )}
+                  {tab.id === 'applications' && user.applications.length > 0 && (
+                    <span className="ml-auto text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-1.5 py-0.5 rounded-full">
+                      {user.applications.length}
+                    </span>
+                  )}
+                  {tab.id === 'properties' && displayProperties.length > 0 && (
+                    <span className="ml-auto text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-1.5 py-0.5 rounded-full">
+                      {displayProperties.length}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </nav>
           </div>
 
-          <div className="grid lg:grid-cols-4 gap-6">
-            {/* ── Sidebar ── */}
-            <div className="bg-[#141414] rounded-2xl border border-white/5 p-4 h-fit lg:sticky lg:top-24">
-              <nav className="space-y-1">
-                {clientTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${
-                      activeTab === tab.id
-                        ? 'bg-[#D4AF37]/10 text-[#D4AF37]'
-                        : 'text-white/60 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <tab.icon className="w-5 h-5" />
-                    {tab.label}
-                    {tab.id === 'favorites' && user.favorites.length > 0 && (
-                      <span className="ml-auto text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-1.5 py-0.5 rounded-full">
-                        {user.favorites.length}
-                      </span>
+          {/* ── Content ── */}
+          <div className="lg:col-span-3">
+            <div
+              key={activeTab}
+              className="bg-[#141414] rounded-2xl border border-white/5 p-6 md:p-8"
+            >
+              {/* ═══════════════════════════════════════
+                  PROPERTIES TAB (Manager & Admin)
+                 ═══════════════════════════════════════ */}
+              {activeTab === 'properties' && (user.role === 'manager' || user.role === 'admin') && (
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-semibold text-white">
+                      {user.role === 'admin' ? 'Все объекты' : 'Мои объекты'}
+                    </h2>
+                    {(user.role === 'manager' || user.role === 'admin') && (
+                      <Button
+                        onClick={() => {
+                          setFormData(emptyForm);
+                          setEditingProperty(null);
+                          setFormStep(1);
+                          setNewImageUrl('');
+                          setShowPropertyForm(true);
+                        }}
+                        className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
+                        disabled={showPropertyForm && !editingProperty}
+                      >
+                        <Plus className="w-4 h-4 mr-2" /> Добавить объект
+                      </Button>
                     )}
-                    {tab.id === 'applications' && user.applications.length > 0 && (
-                      <span className="ml-auto text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-1.5 py-0.5 rounded-full">
-                        {user.applications.length}
-                      </span>
-                    )}
-                    {tab.id === 'properties' && displayProperties.length > 0 && (
-                      <span className="ml-auto text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-1.5 py-0.5 rounded-full">
-                        {displayProperties.length}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </nav>
-            </div>
+                  </div>
 
-            {/* ── Content ── */}
-            <div className="lg:col-span-3">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="bg-[#141414] rounded-2xl border border-white/5 p-6 md:p-8"
-                >
-                  {/* ═══════════════════════════════════════
-                      PROPERTIES TAB (Manager & Admin)
-                     ═══════════════════════════════════════ */}
-                  {activeTab === 'properties' && (user.role === 'manager' || user.role === 'admin') && (
-                    <div>
+                  {/* Step-by-step form */}
+                  {showPropertyForm ? (
+                    <div className="mb-8 bg-[#0B0B0B] rounded-2xl border border-[#D4AF37]/20 p-6">
                       <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-semibold text-white">
-                          {user.role === 'admin' ? 'Все объекты' : 'Мои объекты'}
-                        </h2>
-                        {(user.role === 'manager' || user.role === 'admin') && (
-                          <Button
-                            onClick={() => {
-                              setFormData(emptyForm);
-                              setEditingProperty(null);
-                              setFormStep(1);
-                              setNewImageUrl('');
-                              setShowPropertyForm(true);
-                            }}
-                            className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
-                            disabled={showPropertyForm && !editingProperty}
-                          >
-                            <Plus className="w-4 h-4 mr-2" /> Добавить объект
-                          </Button>
-                        )}
+                        <h3 className="text-lg font-semibold text-white">
+                          {editingProperty ? 'Редактирование объекта' : 'Добавление объекта'}
+                        </h3>
+                        <button onClick={resetForm} className="text-white/40 hover:text-white">
+                          <X className="w-5 h-5" />
+                        </button>
                       </div>
 
-                      {/* Step-by-step form */}
-                      {showPropertyForm ? (
-                        <div className="mb-8 bg-[#0B0B0B] rounded-2xl border border-[#D4AF37]/20 p-6">
-                          <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-semibold text-white">
-                              {editingProperty ? 'Редактирование объекта' : 'Добавление объекта'}
-                            </h3>
-                            <button onClick={resetForm} className="text-white/40 hover:text-white">
-                              <X className="w-5 h-5" />
-                            </button>
-                          </div>
-
-                          {/* Steps indicator */}
-                          <div className="flex items-center gap-2 mb-8">
-                            {STEPS.map((step, idx) => (
-                              <React.Fragment key={step.id}>
-                                <button
-                                  onClick={() => setFormStep(step.id)}
-                                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                                    formStep === step.id
-                                      ? 'bg-[#D4AF37] text-black'
-                                      : formStep > step.id
-                                      ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
-                                      : 'bg-white/5 text-white/40'
-                                  }`}
-                                >
-                                  <step.icon className="w-4 h-4" />
-                                  <span className="hidden sm:inline">{step.label}</span>
-                                  <span className="sm:hidden">{step.id}</span>
-                                </button>
-                                {idx < STEPS.length - 1 && (
-                                  <ChevronRight className="w-4 h-4 text-white/20" />
-                                )}
-                              </React.Fragment>
-                            ))}
-                          </div>
-
-                          {/* Step 1: Basic Info */}
-                          {formStep === 1 && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                              <div className="grid md:grid-cols-2 gap-4">
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block">Название объекта *</label>
-                                  <Input value={formData.title} onChange={e => updateForm('title', e.target.value)}
-                                    placeholder="Пентхаус на Набережной"
-                                    className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block">Цена *</label>
-                                  <Input value={formData.price} onChange={e => updateForm('price', e.target.value)}
-                                    placeholder="45 000 000 ₽"
-                                    className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block">Адрес *</label>
-                                  <Input value={formData.address} onChange={e => updateForm('address', e.target.value)}
-                                    placeholder="ул. Набережная, 45"
-                                    className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block">Район *</label>
-                                  <Input value={formData.district} onChange={e => updateForm('district', e.target.value)}
-                                    placeholder="Ворошиловский"
-                                    className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block">Тип недвижимости *</label>
-                                  <select value={formData.type} onChange={e => updateForm('type', e.target.value)}
-                                    className="w-full bg-[#141414] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-[#D4AF37] focus:outline-none">
-                                    <option value="Квартира">Квартира</option>
-                                    <option value="Дом">Дом</option>
-                                    <option value="Таунхаус">Таунхаус</option>
-                                    <option value="Участок">Участок</option>
-                                    <option value="Коммерческая">Коммерческая</option>
-                                  </select>
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block">Тип сделки</label>
-                                  <select value={formData.dealType} onChange={e => updateForm('dealType', e.target.value)}
-                                    className="w-full bg-[#141414] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-[#D4AF37] focus:outline-none">
-                                    <option value="sale">Продажа</option>
-                                    <option value="rent">Аренда</option>
-                                  </select>
-                                </div>
-                              </div>
-
-                              {/* Images */}
-                              <div>
-                                <label className="text-white/50 text-sm mb-1.5 block">Изображения</label>
-                                <div className="flex gap-2 mb-3">
-                                  <Input value={newImageUrl} onChange={e => setNewImageUrl(e.target.value)}
-                                    placeholder="URL изображения"
-                                    className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
-                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addImage(); } }} />
-                                  <Button onClick={addImage} variant="outline"
-                                    className="border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black shrink-0">
-                                    <ImagePlus className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                                {formData.images.length > 0 && (
-                                  <div className="flex gap-2 flex-wrap">
-                                    {formData.images.map((img, i) => (
-                                      <div key={i} className="relative w-20 h-16 rounded-lg overflow-hidden group">
-                                        <img src={img} alt="" className="w-full h-full object-cover" />
-                                        <button onClick={() => removeImage(i)}
-                                          className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                          <X className="w-4 h-4 text-white" />
-                                        </button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </motion.div>
-                          )}
-
-                          {/* Step 2: Characteristics */}
-                          {formStep === 2 && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                              <div className="grid md:grid-cols-2 gap-4">
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block">Площадь *</label>
-                                  <div className="relative">
-                                    <Maximize className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
-                                    <Input value={formData.area} onChange={e => updateForm('area', e.target.value)}
-                                      placeholder="180 м²" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                  </div>
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block">Комнат *</label>
-                                  <div className="relative">
-                                    <BedDouble className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
-                                    <Input value={formData.rooms} onChange={e => updateForm('rooms', e.target.value)}
-                                      placeholder="4 комнаты" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                  </div>
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block">Этаж</label>
-                                  <div className="relative">
-                                    <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
-                                    <Input value={formData.floor} onChange={e => updateForm('floor', e.target.value)}
-                                      placeholder="25/25" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                  </div>
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block">Парковка</label>
-                                  <div className="relative">
-                                    <Car className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
-                                    <Input value={formData.parking} onChange={e => updateForm('parking', e.target.value)}
-                                      placeholder="2 машиноместа" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                  </div>
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block">Отделка</label>
-                                  <div className="relative">
-                                    <PaintBucket className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
-                                    <Input value={formData.renovation} onChange={e => updateForm('renovation', e.target.value)}
-                                      placeholder="Авторский" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                  </div>
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block">Балкон</label>
-                                  <div className="relative">
-                                    <Sun className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
-                                    <Input value={formData.balcony} onChange={e => updateForm('balcony', e.target.value)}
-                                      placeholder="3 лоджии" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                  </div>
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block">Год постройки</label>
-                                  <div className="relative">
-                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
-                                    <Input value={formData.year} onChange={e => updateForm('year', e.target.value)}
-                                      placeholder="2022" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                  </div>
-                                </div>
-                              </div>
-                            </motion.div>
-                          )}
-
-                          {/* Step 3: Description */}
-                          {formStep === 3 && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                              <div>
-                                <label className="text-white/50 text-sm mb-1.5 block">Описание объекта *</label>
-                                <Textarea value={formData.description} onChange={e => updateForm('description', e.target.value)}
-                                  placeholder="Подробное описание объекта недвижимости..."
-                                  className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30 min-h-[200px] resize-y" />
-                              </div>
-                            </motion.div>
-                          )}
-
-                          {/* Step 4: Infrastructure */}
-                          {formStep === 4 && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                              <div className="grid md:grid-cols-2 gap-4">
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
-                                    <GraduationCap className="w-4 h-4 text-[#D4AF37]" /> Школы
-                                  </label>
-                                  <Input value={formData.schools} onChange={e => updateForm('schools', e.target.value)}
-                                    placeholder="Школа №5 — 500м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
-                                    <TreePine className="w-4 h-4 text-[#D4AF37]" /> Детские сады
-                                  </label>
-                                  <Input value={formData.gardens} onChange={e => updateForm('gardens', e.target.value)}
-                                    placeholder="Детский сад «Солнышко» — 300м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
-                                    <ShoppingBag className="w-4 h-4 text-[#D4AF37]" /> Магазины
-                                  </label>
-                                  <Input value={formData.shops} onChange={e => updateForm('shops', e.target.value)}
-                                    placeholder="ТРЦ «Мега» — 800м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
-                                    <Bus className="w-4 h-4 text-[#D4AF37]" /> Транспорт
-                                  </label>
-                                  <Input value={formData.transport} onChange={e => updateForm('transport', e.target.value)}
-                                    placeholder="Автобусная остановка — 100м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
-                                    <TreePine className="w-4 h-4 text-[#D4AF37]" /> Парки
-                                  </label>
-                                  <Input value={formData.parks} onChange={e => updateForm('parks', e.target.value)}
-                                    placeholder="Парк им. Горького — 600м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                </div>
-                                <div>
-                                  <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
-                                    <Heart className="w-4 h-4 text-[#D4AF37]" /> Медицина
-                                  </label>
-                                  <Input value={formData.medicine} onChange={e => updateForm('medicine', e.target.value)}
-                                    placeholder="Городская больница №1 — 1.2км" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
-                                </div>
-                              </div>
-                            </motion.div>
-                          )}
-
-                          {/* Navigation buttons */}
-                          <div className="flex items-center justify-between mt-8 pt-6 border-t border-white/5">
-                            <Button
-                              variant="outline"
-                              onClick={() => setFormStep(prev => Math.max(1, prev - 1))}
-                              disabled={formStep === 1}
-                              className="border-white/10 text-white/60 hover:text-white hover:bg-white/5"
+                      {/* Steps indicator */}
+                      <div className="flex items-center gap-2 mb-8">
+                        {STEPS.map((step, idx) => (
+                          <React.Fragment key={step.id}>
+                            <button
+                              onClick={() => setFormStep(step.id)}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                                formStep === step.id
+                                  ? 'bg-[#D4AF37] text-black'
+                                  : formStep > step.id
+                                  ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
+                                  : 'bg-white/5 text-white/40'
+                              }`}
                             >
-                              <ChevronLeft className="w-4 h-4 mr-1" /> Назад
-                            </Button>
-                            {formStep < 4 ? (
-                              <Button
-                                onClick={() => setFormStep(prev => Math.min(4, prev + 1))}
-                                className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
-                              >
-                                Далее <ChevronRight className="w-4 h-4 ml-1" />
-                              </Button>
-                            ) : (
-                              <Button
-                                onClick={handleSaveProperty}
-                                disabled={isLoading}
-                                className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
-                              >
-                                {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-                                {editingProperty ? 'Сохранить изменения' : 'Добавить объект'}
-                              </Button>
+                              <step.icon className="w-4 h-4" />
+                              <span className="hidden sm:inline">{step.label}</span>
+                              <span className="sm:hidden">{step.id}</span>
+                            </button>
+                            {idx < STEPS.length - 1 && (
+                              <ChevronRight className="w-4 h-4 text-white/20" />
                             )}
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {/* Properties list */}
-                      {displayProperties.length === 0 && !showPropertyForm ? (
-                        <div className="text-center py-16">
-                          <Building className="w-16 h-16 text-white/10 mx-auto mb-4" />
-                          <p className="text-white/40 text-lg">Нет объектов</p>
-                          <p className="text-white/30 text-sm mt-2">Добавьте первый объект, нажав кнопку выше</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {displayProperties.map(prop => (
-                            <div key={prop.id}
-                              className="flex items-start gap-4 p-4 rounded-xl bg-[#0B0B0B] border border-white/5 hover:border-[#D4AF37]/20 transition-all">
-                              {/* Thumbnail */}
-                              {prop.images && prop.images.length > 0 ? (
-                                <div className="w-20 h-16 rounded-lg overflow-hidden shrink-0">
-                                  <img src={prop.images[0]} alt={prop.title} className="w-full h-full object-cover" />
-                                </div>
-                              ) : (
-                                <div className="w-20 h-16 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
-                                  <Building className="w-6 h-6 text-white/20" />
-                                </div>
-                              )}
-                              {/* Info */}
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between gap-2">
-                                  <div>
-                                    <h3 className="text-white font-medium text-sm">{prop.title}</h3>
-                                    <p className="text-[#D4AF37] font-bold text-sm mt-0.5">{prop.price}</p>
-                                  </div>
-                                  <div className="flex items-center gap-1 shrink-0">
-                                    <button onClick={() => startEditProperty(prop)}
-                                      className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-[#D4AF37] transition-colors">
-                                      <Pencil className="w-4 h-4" />
-                                    </button>
-                                    <button onClick={() => handleDeleteProperty(prop.id)}
-                                      className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-red-400 transition-colors">
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-3 text-white/40 text-xs mt-1">
-                                  <span>{prop.district}</span>
-                                  <span>{prop.area}</span>
-                                  <span>{prop.rooms}</span>
-                                  <span>{prop.type}</span>
-                                </div>
-                                {user.role === 'admin' && prop.manager && (
-                                  <div className="flex items-center gap-1.5 text-xs mt-1.5">
-                                    <User className="w-3 h-3 text-[#D4AF37]" />
-                                    <span className="text-[#D4AF37]/80">Менеджер: {prop.manager.name || prop.manager.email}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* ── FAVORITES ── */}
-                  {activeTab === 'favorites' && (
-                    <div>
-                      <h2 className="text-xl font-semibold text-white mb-6">Избранное</h2>
-                      {user.favorites.length === 0 ? (
-                        <div className="text-center py-16">
-                          <Heart className="w-16 h-16 text-white/10 mx-auto mb-4" />
-                          <p className="text-white/40 text-lg">У вас пока нет избранных объектов</p>
-                          <p className="text-white/30 text-sm mt-2">Добавляйте объекты в избранное, нажав на иконку сердца</p>
-                          <Button className="mt-6 bg-[#D4AF37] text-black hover:bg-[#F1D28A]"
-                            onClick={() => navigate('catalog')}>
-                            Смотреть каталог
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="grid md:grid-cols-2 gap-4">
-                          {user.favorites.map(fav => (
-                            <div key={fav.id}
-                              className="group flex gap-4 p-4 rounded-xl bg-[#0B0B0B] border border-white/5 hover:border-[#D4AF37]/30 transition-all cursor-pointer"
-                              onClick={() => navigate('catalog')}>
-                              <div className="w-24 h-20 rounded-lg overflow-hidden shrink-0 bg-white/5 flex items-center justify-center">
-                                <Building className="w-6 h-6 text-white/20" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h3 className="text-white font-medium text-sm truncate">Объект #{fav.propertyId}</h3>
-                                <button onClick={e => { e.stopPropagation(); toggleFavorite(fav.propertyId); }}
-                                  className="text-[#D4AF37] hover:text-red-400 transition-colors mt-1">
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* ── APPLICATIONS ── */}
-                  {activeTab === 'applications' && (
-                    <div>
-                      <h2 className="text-xl font-semibold text-white mb-6">Мои заявки</h2>
-                      {user.applications.length === 0 ? (
-                        <div className="text-center py-16">
-                          <FileText className="w-16 h-16 text-white/10 mx-auto mb-4" />
-                          <p className="text-white/40 text-lg">У вас пока нет заявок</p>
-                          <Button className="mt-6 bg-[#D4AF37] text-black hover:bg-[#F1D28A]"
-                            onClick={() => navigate('services')}>
-                            Оставить заявку
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {user.applications.map(app => {
-                            const Icon = typeIcon[app.type] || FileText;
-                            return (
-                              <div key={app.id}
-                                className="flex items-start gap-4 p-4 rounded-xl bg-[#0B0B0B] border border-white/5">
-                                <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center shrink-0">
-                                  <Icon className="w-5 h-5 text-[#D4AF37]" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="text-white font-medium text-sm">
-                                      {typeLabel[app.type] || app.type}
-                                    </span>
-                                    <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor[app.status] || 'bg-white/10 text-white/50'}`}>
-                                      {statusLabel[app.status] || app.status}
-                                    </span>
-                                  </div>
-                                  {app.propertyTitle && (
-                                    <p className="text-white/60 text-sm mt-1">{app.propertyTitle}</p>
-                                  )}
-                                  {app.message && (
-                                    <p className="text-white/40 text-xs mt-1">{app.message}</p>
-                                  )}
-                                  <p className="text-white/30 text-xs mt-2">
-                                    {new Date(app.createdAt).toLocaleDateString('ru-RU', {
-                                      day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                                    })}
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* ── MESSAGES ── */}
-                  {activeTab === 'messages' && (
-                    <div>
-                      <h2 className="text-xl font-semibold text-white mb-6">Сообщения</h2>
-                      <div className="flex flex-col h-[500px]">
-                        <div className="flex-1 overflow-y-auto space-y-3 pr-2 mb-4">
-                          {user.messages.length === 0 ? (
-                            <div className="text-center py-16">
-                              <MessageCircle className="w-16 h-16 text-white/10 mx-auto mb-4" />
-                              <p className="text-white/40 text-lg">Нет сообщений</p>
-                              <p className="text-white/30 text-sm mt-2">Напишите нам, и мы ответим в ближайшее время</p>
-                            </div>
-                          ) : (
-                            user.messages.map(msg => (
-                              <div key={msg.id}
-                                className={`flex ${msg.fromManager ? 'justify-start' : 'justify-end'}`}>
-                                <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                                  msg.fromManager
-                                    ? 'bg-[#1E1E1E] text-white/80 rounded-bl-md'
-                                    : 'bg-[#D4AF37] text-black rounded-br-md'
-                                }`}>
-                                  <p className="text-sm">{msg.text}</p>
-                                  <p className={`text-xs mt-1 ${msg.fromManager ? 'text-white/30' : 'text-black/50'}`}>
-                                    {new Date(msg.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
-                                  </p>
-                                </div>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                        <div className="flex gap-2 pt-3 border-t border-white/5">
-                          <Textarea
-                            placeholder="Введите сообщение..."
-                            value={messageText}
-                            onChange={e => setMessageText(e.target.value)}
-                            className="bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30 resize-none min-h-[44px] max-h-32"
-                            rows={1}
-                            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
-                          />
-                          <Button onClick={handleSendMessage}
-                            className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] shrink-0 h-11 w-11 p-0"
-                            disabled={!messageText.trim()}>
-                            <Send className="w-4 h-4" />
-                          </Button>
-                        </div>
+                          </React.Fragment>
+                        ))}
                       </div>
-                    </div>
-                  )}
 
-                  {/* ── SETTINGS ── */}
-                  {activeTab === 'settings' && (
-                    <div>
-                      <h2 className="text-xl font-semibold text-white mb-6">Настройки профиля</h2>
-                      <div className="space-y-5 max-w-md">
-                        <div>
-                          <label className="text-white/50 text-sm mb-1.5 block">Имя</label>
-                          <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
-                            <Input value={settingsName} onChange={e => setSettingsName(e.target.value)}
-                              className="pl-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] text-white" />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-white/50 text-sm mb-1.5 block">Email</label>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
-                            <Input value={settingsEmail} onChange={e => setSettingsEmail(e.target.value)}
-                              type="email"
-                              className="pl-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] text-white" />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-white/50 text-sm mb-1.5 block">Телефон</label>
-                          <div className="relative">
-                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
-                            <Input value={settingsPhone} onChange={e => setSettingsPhone(e.target.value)}
-                              type="tel"
-                              className="pl-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] text-white" />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-white/50 text-sm mb-1.5 block">Роль</label>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${roleBadgeColor}`}>
-                              {roleLabel}
-                            </span>
-                            <span className="text-white/30 text-xs">Роль назначается администратором</span>
-                          </div>
-                        </div>
-                        <Button onClick={handleSaveSettings} disabled={isLoading}
-                          className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold">
-                          {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-                          Сохранить изменения
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ── ADMIN PANEL ── */}
-                  {activeTab === 'admin' && user.role === 'admin' && (
-                    <div>
-                      <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-                        <ShieldCheck className="w-5 h-5 text-[#D4AF37]" /> Панель администратора
-                      </h2>
-                      {!adminData ? (
-                        <div className="text-center py-16">
-                          <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin mx-auto" />
-                        </div>
-                      ) : (
-                        <div className="space-y-8">
-                          {/* Stats Cards */}
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
-                              <Users className="w-6 h-6 text-[#D4AF37] mb-2" />
-                              <p className="text-2xl font-bold text-white">{adminData.users.length}</p>
-                              <p className="text-white/50 text-sm">Пользователей</p>
-                            </motion.div>
-                            <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
-                              <FileText className="w-6 h-6 text-[#D4AF37] mb-2" />
-                              <p className="text-2xl font-bold text-white">{adminData.applications.length}</p>
-                              <p className="text-white/50 text-sm">Заявок</p>
-                            </motion.div>
-                            <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
-                              <MessageCircle className="w-6 h-6 text-[#D4AF37] mb-2" />
-                              <p className="text-2xl font-bold text-white">{adminData.messages.length}</p>
-                              <p className="text-white/50 text-sm">Сообщений</p>
-                            </motion.div>
-                            <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
-                              <Building className="w-6 h-6 text-[#D4AF37] mb-2" />
-                              <p className="text-2xl font-bold text-white">{adminData.properties?.length || 0}</p>
-                              <p className="text-white/50 text-sm">Объектов</p>
-                            </motion.div>
-                          </div>
-
-                          {/* User Management Section */}
-                          <div>
-                            <div className="flex items-center justify-between mb-4">
-                              <h3 className="text-lg font-semibold text-white">Управление пользователями</h3>
-                              <Button
-                                onClick={() => {
-                                  resetUserForm();
-                                  setShowUserForm(true);
-                                }}
-                                className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
-                                disabled={showUserForm && !editingUser}
-                              >
-                                <UserPlus className="w-4 h-4 mr-2" /> Добавить пользователя
-                              </Button>
-                            </div>
-
-                            {/* User Form */}
-                            {showUserForm && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="mb-6 bg-[#0B0B0B] rounded-2xl border border-[#D4AF37]/20 p-6"
-                              >
-                                <div className="flex items-center justify-between mb-6">
-                                  <h4 className="text-lg font-semibold text-white">
-                                    {editingUser ? 'Редактирование пользователя' : 'Новый пользователь'}
-                                  </h4>
-                                  <button onClick={resetUserForm} className="text-white/40 hover:text-white transition-colors">
-                                    <X className="w-5 h-5" />
-                                  </button>
-                                </div>
-
-                                <div className="grid md:grid-cols-2 gap-4">
-                                  <div>
-                                    <label className="text-white/50 text-sm mb-1.5 block">Имя</label>
-                                    <div className="relative">
-                                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
-                                      <Input
-                                        value={userFormData.name}
-                                        onChange={e => setUserFormData(prev => ({ ...prev, name: e.target.value }))}
-                                        placeholder="Иван Иванов"
-                                        className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <label className="text-white/50 text-sm mb-1.5 block">Email *</label>
-                                    <div className="relative">
-                                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
-                                      <Input
-                                        value={userFormData.email}
-                                        onChange={e => setUserFormData(prev => ({ ...prev, email: e.target.value }))}
-                                        placeholder="email@example.com"
-                                        type="email"
-                                        className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
-                                        required
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <label className="text-white/50 text-sm mb-1.5 block">Телефон</label>
-                                    <div className="relative">
-                                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
-                                      <Input
-                                        value={userFormData.phone}
-                                        onChange={e => setUserFormData(prev => ({ ...prev, phone: e.target.value }))}
-                                        placeholder="+7 (999) 123-45-67"
-                                        type="tel"
-                                        className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <label className="text-white/50 text-sm mb-1.5 block">
-                                      Пароль {editingUser ? '(оставьте пустым, чтобы не менять)' : '*'}
-                                    </label>
-                                    <div className="relative">
-                                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
-                                      <Input
-                                        value={userFormData.password}
-                                        onChange={e => setUserFormData(prev => ({ ...prev, password: e.target.value }))}
-                                        placeholder={editingUser ? 'Новый пароль' : 'Мин. 6 символов'}
-                                        type="password"
-                                        className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
-                                        required={!editingUser}
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <label className="text-white/50 text-sm mb-1.5 block">Роль</label>
-                                    <select
-                                      value={userFormData.role}
-                                      onChange={e => setUserFormData(prev => ({ ...prev, role: e.target.value }))}
-                                      className="w-full bg-[#141414] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-[#D4AF37] focus:outline-none"
-                                    >
-                                      <option value="client">Клиент</option>
-                                      <option value="manager">Менеджер</option>
-                                      <option value="admin">Администратор</option>
-                                    </select>
-                                  </div>
-                                </div>
-
-                                <div className="flex gap-3 mt-6">
-                                  <Button
-                                    onClick={handleSaveUser}
-                                    disabled={isLoading}
-                                    className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
-                                  >
-                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-                                    {editingUser ? 'Сохранить' : 'Создать'}
-                                  </Button>
-                                  <Button
-                                    onClick={resetUserForm}
-                                    variant="outline"
-                                    className="border-white/10 text-white/60 hover:text-white hover:border-white/20"
-                                  >
-                                    Отмена
-                                  </Button>
-                                </div>
-                              </motion.div>
-                            )}
-
-                            {/* Users Table */}
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-sm">
-                                <thead>
-                                  <tr className="border-b border-white/10">
-                                    <th className="text-left text-white/50 py-3 px-2">Пользователь</th>
-                                    <th className="text-left text-white/50 py-3 px-2">Роль</th>
-                                    <th className="text-left text-white/50 py-3 px-2">Статус</th>
-                                    <th className="text-left text-white/50 py-3 px-2 hidden md:table-cell">Объекты</th>
-                                    <th className="text-left text-white/50 py-3 px-2 hidden sm:table-cell">Дата</th>
-                                    <th className="text-right text-white/50 py-3 px-2">Действия</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {adminData.users.map((u: any) => (
-                                    <tr
-                                      key={u.id}
-                                      className={`border-b border-white/5 transition-colors ${
-                                        u.blocked ? 'bg-red-500/5' : 'hover:bg-white/[0.02]'
-                                      }`}
-                                    >
-                                      <td className="py-3 px-2">
-                                        <div className="flex items-center gap-3">
-                                          <div className="w-9 h-9 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center shrink-0">
-                                            <span className="text-[#D4AF37] font-semibold text-sm">
-                                              {(u.name || u.email)[0].toUpperCase()}
-                                            </span>
-                                          </div>
-                                          <div className="min-w-0">
-                                            <p className="text-white truncate">{u.name || 'Без имени'}</p>
-                                            <p className="text-white/40 text-xs truncate">{u.email}</p>
-                                          </div>
-                                        </div>
-                                      </td>
-                                      <td className="py-3 px-2">
-                                        {u.role === 'admin' ? (
-                                          <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-medium">
-                                            Админ
-                                          </span>
-                                        ) : (
-                                          <select
-                                            value={u.role}
-                                            onChange={e => handleRoleChange(u.id, e.target.value)}
-                                            className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#D4AF37] ${
-                                              u.role === 'manager'
-                                                ? 'bg-blue-500/20 text-blue-400'
-                                                : 'bg-[#D4AF37]/20 text-[#D4AF37]'
-                                            }`}
-                                          >
-                                            <option value="client">Клиент</option>
-                                            <option value="manager">Менеджер</option>
-                                          </select>
-                                        )}
-                                      </td>
-                                      <td className="py-3 px-2">
-                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                                          u.blocked
-                                            ? 'bg-red-500/20 text-red-400'
-                                            : 'bg-green-500/20 text-green-400'
-                                        }`}>
-                                          {u.blocked ? 'Заблокирован' : 'Активен'}
-                                        </span>
-                                      </td>
-                                      <td className="py-3 px-2 hidden md:table-cell">
-                                        {u.role === 'manager' || u.role === 'admin' ? (
-                                          <span className="text-white/50 text-xs">
-                                            {u._count?.properties ?? '—'} объектов
-                                          </span>
-                                        ) : (
-                                          <span className="text-white/30 text-xs">—</span>
-                                        )}
-                                      </td>
-                                      <td className="py-3 px-2 text-white/40 hidden sm:table-cell">
-                                        {new Date(u.createdAt).toLocaleDateString('ru-RU')}
-                                      </td>
-                                      <td className="py-3 px-2">
-                                        <div className="flex items-center justify-end gap-1">
-                                          <button
-                                            onClick={() => startEditUser(u)}
-                                            className="p-1.5 rounded-lg text-white/40 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors"
-                                            title="Редактировать"
-                                          >
-                                            <Pencil className="w-4 h-4" />
-                                          </button>
-                                          {u.role !== 'admin' && (
-                                            <>
-                                              <button
-                                                onClick={() => handleToggleBlock(u)}
-                                                className={`p-1.5 rounded-lg transition-colors ${
-                                                  u.blocked
-                                                    ? 'text-red-400 hover:text-green-400 hover:bg-green-500/10'
-                                                    : 'text-white/40 hover:text-red-400 hover:bg-red-500/10'
-                                                }`}
-                                                title={u.blocked ? 'Разблокировать' : 'Заблокировать'}
-                                              >
-                                                {u.blocked ? <ShieldCheck className="w-4 h-4" /> : <ShieldOff className="w-4 h-4" />}
-                                              </button>
-                                              <button
-                                                onClick={() => handleDeleteUser(u.id)}
-                                                className="p-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                                                title="Удалить"
-                                              >
-                                                <Trash2 className="w-4 h-4" />
-                                              </button>
-                                            </>
-                                          )}
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-
-                          {/* Quick Stats for Managers */}
-                          {adminData.users.filter((u: any) => u.role === 'manager').length > 0 && (
+                      {/* Step 1: Basic Info */}
+                      {formStep === 1 && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                          <div className="grid md:grid-cols-2 gap-4">
                             <div>
-                              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                                <BarChart3 className="w-5 h-5 text-[#D4AF37]" /> Статистика менеджеров
-                              </h3>
-                              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                {adminData.users
-                                  .filter((u: any) => u.role === 'manager')
-                                  .map((u: any) => (
-                                    <motion.div
-                                      key={u.id}
-                                      whileHover={{ scale: 1.02 }}
-                                      className="bg-[#0B0B0B] rounded-xl p-4 border border-white/5 flex items-center gap-3"
-                                    >
-                                      <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0">
-                                        <span className="text-blue-400 font-semibold text-sm">
-                                          {(u.name || u.email)[0].toUpperCase()}
-                                        </span>
-                                      </div>
-                                      <div className="min-w-0 flex-1">
-                                        <p className="text-white text-sm font-medium truncate">{u.name || u.email}</p>
-                                        <p className="text-white/40 text-xs">
-                                          {u._count?.properties ?? 0} объектов
-                                        </p>
-                                      </div>
-                                      <div className="text-right">
-                                        <p className="text-[#D4AF37] font-bold">{u._count?.properties ?? 0}</p>
-                                      </div>
-                                    </motion.div>
-                                  ))}
-                              </div>
+                              <label className="text-white/50 text-sm mb-1.5 block">Название объекта *</label>
+                              <Input value={formData.title} onChange={e => updateForm('title', e.target.value)}
+                                placeholder="Пентхаус на Набережной"
+                                className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
                             </div>
-                          )}
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block">Цена *</label>
+                              <Input value={formData.price} onChange={e => updateForm('price', e.target.value)}
+                                placeholder="45 000 000 ₽"
+                                className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block">Адрес *</label>
+                              <Input value={formData.address} onChange={e => updateForm('address', e.target.value)}
+                                placeholder="ул. Набережная, 45"
+                                className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block">Район *</label>
+                              <Input value={formData.district} onChange={e => updateForm('district', e.target.value)}
+                                placeholder="Ворошиловский"
+                                className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block">Тип недвижимости *</label>
+                              <select value={formData.type} onChange={e => updateForm('type', e.target.value)}
+                                className="w-full bg-[#141414] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-[#D4AF37] focus:outline-none">
+                                <option value="Квартира">Квартира</option>
+                                <option value="Дом">Дом</option>
+                                <option value="Таунхаус">Таунхаус</option>
+                                <option value="Участок">Участок</option>
+                                <option value="Коммерческая">Коммерческая</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block">Тип сделки</label>
+                              <select value={formData.dealType} onChange={e => updateForm('dealType', e.target.value)}
+                                className="w-full bg-[#141414] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-[#D4AF37] focus:outline-none">
+                                <option value="sale">Продажа</option>
+                                <option value="rent">Аренда</option>
+                              </select>
+                            </div>
+                          </div>
 
-                          {/* Applications */}
+                          {/* Images */}
                           <div>
-                            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                              <FileText className="w-5 h-5 text-[#D4AF37]" /> Заявки
-                            </h3>
-                            {adminData.applications.length === 0 ? (
-                              <div className="text-center py-8 text-white/40">
-                                <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                                <p>Нет заявок</p>
-                              </div>
-                            ) : (
-                              <div className="space-y-2 max-h-96 overflow-y-auto pr-1"
-                                style={{ scrollbarWidth: 'thin', scrollbarColor: '#D4AF37 transparent' }}
-                              >
-                                {adminData.applications.map((app: any) => (
-                                  <div key={app.id} className="flex items-center gap-3 p-3 rounded-lg bg-[#0B0B0B] border border-white/5 hover:border-white/10 transition-colors">
-                                    <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor[app.status] || 'bg-white/10 text-white/50'}`}>
-                                      {statusLabel[app.status] || app.status}
-                                    </span>
-                                    <span className="text-white/70 text-sm flex-1">
-                                      {typeLabel[app.type] || app.type} — {app.user?.name || app.user?.email}
-                                    </span>
-                                    <span className="text-white/30 text-xs">
-                                      {new Date(app.createdAt).toLocaleDateString('ru-RU')}
-                                    </span>
+                            <label className="text-white/50 text-sm mb-1.5 block">Изображения</label>
+                            <div className="flex gap-2 mb-3">
+                              <Input value={newImageUrl} onChange={e => setNewImageUrl(e.target.value)}
+                                placeholder="URL изображения"
+                                className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
+                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addImage(); } }} />
+                              <Button onClick={addImage} variant="outline"
+                                className="border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black shrink-0">
+                                <ImagePlus className="w-4 h-4" />
+                              </Button>
+                            </div>
+                            {formData.images.length > 0 && (
+                              <div className="flex gap-2 flex-wrap">
+                                {formData.images.map((img, i) => (
+                                  <div key={i} className="relative w-20 h-16 rounded-lg overflow-hidden group">
+                                    <img src={img} alt="" className="w-full h-full object-cover" />
+                                    <button onClick={() => removeImage(i)}
+                                      className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <X className="w-4 h-4 text-white" />
+                                    </button>
                                   </div>
                                 ))}
                               </div>
                             )}
                           </div>
-                        </div>
+                        </motion.div>
                       )}
+
+                      {/* Step 2: Characteristics */}
+                      {formStep === 2 && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block">Площадь *</label>
+                              <div className="relative">
+                                <Maximize className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                <Input value={formData.area} onChange={e => updateForm('area', e.target.value)}
+                                  placeholder="180 м²" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block">Комнат *</label>
+                              <div className="relative">
+                                <BedDouble className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                <Input value={formData.rooms} onChange={e => updateForm('rooms', e.target.value)}
+                                  placeholder="4 комнаты" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block">Этаж</label>
+                              <div className="relative">
+                                <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                <Input value={formData.floor} onChange={e => updateForm('floor', e.target.value)}
+                                  placeholder="25/25" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block">Парковка</label>
+                              <div className="relative">
+                                <Car className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                <Input value={formData.parking} onChange={e => updateForm('parking', e.target.value)}
+                                  placeholder="2 машиноместа" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block">Отделка</label>
+                              <div className="relative">
+                                <PaintBucket className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                <Input value={formData.renovation} onChange={e => updateForm('renovation', e.target.value)}
+                                  placeholder="Авторский" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block">Балкон</label>
+                              <div className="relative">
+                                <Sun className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                <Input value={formData.balcony} onChange={e => updateForm('balcony', e.target.value)}
+                                  placeholder="3 лоджии" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block">Год постройки</label>
+                              <div className="relative">
+                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                <Input value={formData.year} onChange={e => updateForm('year', e.target.value)}
+                                  placeholder="2022" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Step 3: Description */}
+                      {formStep === 3 && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                          <div>
+                            <label className="text-white/50 text-sm mb-1.5 block">Описание объекта *</label>
+                            <Textarea value={formData.description} onChange={e => updateForm('description', e.target.value)}
+                              placeholder="Подробное описание объекта недвижимости..."
+                              className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30 min-h-[200px] resize-y" />
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Step 4: Infrastructure */}
+                      {formStep === 4 && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
+                                <GraduationCap className="w-4 h-4 text-[#D4AF37]" /> Школы
+                              </label>
+                              <Input value={formData.schools} onChange={e => updateForm('schools', e.target.value)}
+                                placeholder="Школа №5 — 500м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
+                                <TreePine className="w-4 h-4 text-[#D4AF37]" /> Детские сады
+                              </label>
+                              <Input value={formData.gardens} onChange={e => updateForm('gardens', e.target.value)}
+                                placeholder="Детский сад «Солнышко» — 300м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
+                                <ShoppingBag className="w-4 h-4 text-[#D4AF37]" /> Магазины
+                              </label>
+                              <Input value={formData.shops} onChange={e => updateForm('shops', e.target.value)}
+                                placeholder="ТРЦ «Мега» — 800м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
+                                <Bus className="w-4 h-4 text-[#D4AF37]" /> Транспорт
+                              </label>
+                              <Input value={formData.transport} onChange={e => updateForm('transport', e.target.value)}
+                                placeholder="Автобусная остановка — 100м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
+                                <TreePine className="w-4 h-4 text-[#D4AF37]" /> Парки
+                              </label>
+                              <Input value={formData.parks} onChange={e => updateForm('parks', e.target.value)}
+                                placeholder="Парк им. Горького — 600м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                            </div>
+                            <div>
+                              <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
+                                <Heart className="w-4 h-4 text-[#D4AF37]" /> Медицина
+                              </label>
+                              <Input value={formData.medicine} onChange={e => updateForm('medicine', e.target.value)}
+                                placeholder="Городская больница №1 — 1.2км" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Navigation buttons */}
+                      <div className="flex items-center justify-between mt-8 pt-6 border-t border-white/5">
+                        <Button
+                          variant="outline"
+                          onClick={() => setFormStep(prev => Math.max(1, prev - 1))}
+                          disabled={formStep === 1}
+                          className="border-white/10 text-white/60 hover:text-white hover:bg-white/5"
+                        >
+                          <ChevronLeft className="w-4 h-4 mr-1" /> Назад
+                        </Button>
+                        {formStep < 4 ? (
+                          <Button
+                            onClick={() => setFormStep(prev => Math.min(4, prev + 1))}
+                            className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
+                          >
+                            Далее <ChevronRight className="w-4 h-4 ml-1" />
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={handleSaveProperty}
+                            disabled={isLoading}
+                            className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
+                          >
+                            {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                            {editingProperty ? 'Сохранить изменения' : 'Добавить объект'}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {/* Properties list */}
+                  {displayProperties.length === 0 && !showPropertyForm ? (
+                    <div className="text-center py-16">
+                      <Building className="w-16 h-16 text-white/10 mx-auto mb-4" />
+                      <p className="text-white/40 text-lg">Нет объектов</p>
+                      <p className="text-white/30 text-sm mt-2">Добавьте первый объект, нажав кнопку выше</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {displayProperties.map(prop => (
+                        <div key={prop.id}
+                          className="flex items-start gap-4 p-4 rounded-xl bg-[#0B0B0B] border border-white/5 hover:border-[#D4AF37]/20 transition-all">
+                          {/* Thumbnail */}
+                          {prop.images && prop.images.length > 0 ? (
+                            <div className="w-20 h-16 rounded-lg overflow-hidden shrink-0">
+                              <img src={prop.images[0]} alt={prop.title} className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className="w-20 h-16 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
+                              <Building className="w-6 h-6 text-white/20" />
+                            </div>
+                          )}
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <h3 className="text-white font-medium text-sm">{prop.title}</h3>
+                                <p className="text-[#D4AF37] font-bold text-sm mt-0.5">{prop.price}</p>
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button onClick={() => startEditProperty(prop)}
+                                  className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-[#D4AF37] transition-colors">
+                                  <Pencil className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => handleDeleteProperty(prop.id)}
+                                  className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-red-400 transition-colors">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 text-white/40 text-xs mt-1">
+                              <span>{prop.district}</span>
+                              <span>{prop.area}</span>
+                              <span>{prop.rooms}</span>
+                              <span>{prop.type}</span>
+                            </div>
+                            {user.role === 'admin' && prop.manager && (
+                              <div className="flex items-center gap-1.5 text-xs mt-1.5">
+                                <User className="w-3 h-3 text-[#D4AF37]" />
+                                <span className="text-[#D4AF37]/80">Менеджер: {prop.manager.name || prop.manager.email}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
-                </motion.div>
-              </AnimatePresence>
+                </div>
+              )}
+
+              {/* ── FAVORITES ── */}
+              {activeTab === 'favorites' && (
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-6">Избранное</h2>
+                  {user.favorites.length === 0 ? (
+                    <div className="text-center py-16">
+                      <Heart className="w-16 h-16 text-white/10 mx-auto mb-4" />
+                      <p className="text-white/40 text-lg">У вас пока нет избранных объектов</p>
+                      <p className="text-white/30 text-sm mt-2">Добавляйте объекты в избранное, нажав на иконку сердца</p>
+                      <Button className="mt-6 bg-[#D4AF37] text-black hover:bg-[#F1D28A]"
+                        onClick={() => navigate('catalog')}>
+                        Смотреть каталог
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {user.favorites.map(fav => (
+                        <div key={fav.id}
+                          className="group flex gap-4 p-4 rounded-xl bg-[#0B0B0B] border border-white/5 hover:border-[#D4AF37]/30 transition-all cursor-pointer"
+                          onClick={() => navigate('catalog')}>
+                          <div className="w-24 h-20 rounded-lg overflow-hidden shrink-0 bg-white/5 flex items-center justify-center">
+                            <Building className="w-6 h-6 text-white/20" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-white font-medium text-sm truncate">Объект #{fav.propertyId}</h3>
+                            <button onClick={e => { e.stopPropagation(); toggleFavorite(fav.propertyId); }}
+                              className="text-[#D4AF37] hover:text-red-400 transition-colors mt-1">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── APPLICATIONS ── */}
+              {activeTab === 'applications' && (
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-6">Мои заявки</h2>
+                  {user.applications.length === 0 ? (
+                    <div className="text-center py-16">
+                      <FileText className="w-16 h-16 text-white/10 mx-auto mb-4" />
+                      <p className="text-white/40 text-lg">У вас пока нет заявок</p>
+                      <Button className="mt-6 bg-[#D4AF37] text-black hover:bg-[#F1D28A]"
+                        onClick={() => navigate('services')}>
+                        Оставить заявку
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {user.applications.map(app => {
+                        const Icon = typeIcon[app.type] || FileText;
+                        return (
+                          <div key={app.id}
+                            className="flex items-start gap-4 p-4 rounded-xl bg-[#0B0B0B] border border-white/5">
+                            <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center shrink-0">
+                              <Icon className="w-5 h-5 text-[#D4AF37]" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-white font-medium text-sm">
+                                  {typeLabel[app.type] || app.type}
+                                </span>
+                                <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor[app.status] || 'bg-white/10 text-white/50'}`}>
+                                  {statusLabel[app.status] || app.status}
+                                </span>
+                              </div>
+                              {app.propertyTitle && (
+                                <p className="text-white/60 text-sm mt-1">{app.propertyTitle}</p>
+                              )}
+                              {app.message && (
+                                <p className="text-white/40 text-xs mt-1">{app.message}</p>
+                              )}
+                              <p className="text-white/30 text-xs mt-2">
+                                {new Date(app.createdAt).toLocaleDateString('ru-RU', {
+                                  day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── MESSAGES ── */}
+              {activeTab === 'messages' && (
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-6">Сообщения</h2>
+                  <div className="flex flex-col h-[500px]">
+                    <div className="flex-1 overflow-y-auto space-y-3 pr-2 mb-4">
+                      {user.messages.length === 0 ? (
+                        <div className="text-center py-16">
+                          <MessageCircle className="w-16 h-16 text-white/10 mx-auto mb-4" />
+                          <p className="text-white/40 text-lg">Нет сообщений</p>
+                          <p className="text-white/30 text-sm mt-2">Напишите нам, и мы ответим в ближайшее время</p>
+                        </div>
+                      ) : (
+                        user.messages.map(msg => (
+                          <div key={msg.id}
+                            className={`flex ${msg.fromManager ? 'justify-start' : 'justify-end'}`}>
+                            <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                              msg.fromManager
+                                ? 'bg-[#1E1E1E] text-white/80 rounded-bl-md'
+                                : 'bg-[#D4AF37] text-black rounded-br-md'
+                            }`}>
+                              <p className="text-sm">{msg.text}</p>
+                              <p className={`text-xs mt-1 ${msg.fromManager ? 'text-white/30' : 'text-black/50'}`}>
+                                {new Date(msg.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <div className="flex gap-2 pt-3 border-t border-white/5">
+                      <Textarea
+                        placeholder="Введите сообщение..."
+                        value={messageText}
+                        onChange={e => setMessageText(e.target.value)}
+                        className="bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30 resize-none min-h-[44px] max-h-32"
+                        rows={1}
+                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
+                      />
+                      <Button onClick={handleSendMessage}
+                        className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] shrink-0 h-11 w-11 p-0"
+                        disabled={!messageText.trim()}>
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── SETTINGS ── */}
+              {activeTab === 'settings' && (
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-6">Настройки профиля</h2>
+                  <div className="space-y-5 max-w-md">
+                    <div>
+                      <label className="text-white/50 text-sm mb-1.5 block">Имя</label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
+                        <Input value={settingsName} onChange={e => setSettingsName(e.target.value)}
+                          className="pl-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] text-white" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-white/50 text-sm mb-1.5 block">Email</label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
+                        <Input value={settingsEmail} onChange={e => setSettingsEmail(e.target.value)}
+                          type="email"
+                          className="pl-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] text-white" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-white/50 text-sm mb-1.5 block">Телефон</label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
+                        <Input value={settingsPhone} onChange={e => setSettingsPhone(e.target.value)}
+                          type="tel"
+                          className="pl-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] text-white" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-white/50 text-sm mb-1.5 block">Роль</label>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${roleBadgeColor}`}>
+                          {roleLabel}
+                        </span>
+                        <span className="text-white/30 text-xs">Роль назначается администратором</span>
+                      </div>
+                    </div>
+                    <Button onClick={handleSaveSettings} disabled={isLoading}
+                      className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold">
+                      {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                      Сохранить изменения
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* ── ADMIN PANEL ── */}
+              {activeTab === 'admin' && user.role === 'admin' && (
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-[#D4AF37]" /> Панель администратора
+                  </h2>
+                  {!adminData ? (
+                    <div className="text-center py-16">
+                      <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin mx-auto" />
+                    </div>
+                  ) : (
+                    <div className="space-y-8">
+                      {/* Stats Cards */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
+                          <Users className="w-6 h-6 text-[#D4AF37] mb-2" />
+                          <p className="text-2xl font-bold text-white">{adminData.users.length}</p>
+                          <p className="text-white/50 text-sm">Пользователей</p>
+                        </motion.div>
+                        <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
+                          <FileText className="w-6 h-6 text-[#D4AF37] mb-2" />
+                          <p className="text-2xl font-bold text-white">{adminData.applications.length}</p>
+                          <p className="text-white/50 text-sm">Заявок</p>
+                        </motion.div>
+                        <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
+                          <MessageCircle className="w-6 h-6 text-[#D4AF37] mb-2" />
+                          <p className="text-2xl font-bold text-white">{adminData.messages.length}</p>
+                          <p className="text-white/50 text-sm">Сообщений</p>
+                        </motion.div>
+                        <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
+                          <Building className="w-6 h-6 text-[#D4AF37] mb-2" />
+                          <p className="text-2xl font-bold text-white">{adminData.properties?.length || 0}</p>
+                          <p className="text-white/50 text-sm">Объектов</p>
+                        </motion.div>
+                      </div>
+
+                      {/* User Management Section */}
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold text-white">Управление пользователями</h3>
+                          <Button
+                            onClick={() => {
+                              resetUserForm();
+                              setShowUserForm(true);
+                            }}
+                            className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
+                            disabled={showUserForm && !editingUser}
+                          >
+                            <UserPlus className="w-4 h-4 mr-2" /> Добавить пользователя
+                          </Button>
+                        </div>
+
+                        {/* User Form */}
+                        {showUserForm && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="mb-6 bg-[#0B0B0B] rounded-2xl border border-[#D4AF37]/20 p-6"
+                          >
+                            <div className="flex items-center justify-between mb-6">
+                              <h4 className="text-lg font-semibold text-white">
+                                {editingUser ? 'Редактирование пользователя' : 'Новый пользователь'}
+                              </h4>
+                              <button onClick={resetUserForm} className="text-white/40 hover:text-white transition-colors">
+                                <X className="w-5 h-5" />
+                              </button>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="text-white/50 text-sm mb-1.5 block">Имя</label>
+                                <div className="relative">
+                                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                  <Input
+                                    value={userFormData.name}
+                                    onChange={e => setUserFormData(prev => ({ ...prev, name: e.target.value }))}
+                                    placeholder="Иван Иванов"
+                                    className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="text-white/50 text-sm mb-1.5 block">Email *</label>
+                                <div className="relative">
+                                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                  <Input
+                                    value={userFormData.email}
+                                    onChange={e => setUserFormData(prev => ({ ...prev, email: e.target.value }))}
+                                    placeholder="email@example.com"
+                                    type="email"
+                                    className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
+                                    required
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="text-white/50 text-sm mb-1.5 block">Телефон</label>
+                                <div className="relative">
+                                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                  <Input
+                                    value={userFormData.phone}
+                                    onChange={e => setUserFormData(prev => ({ ...prev, phone: e.target.value }))}
+                                    placeholder="+7 (999) 123-45-67"
+                                    type="tel"
+                                    className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="text-white/50 text-sm mb-1.5 block">
+                                  Пароль {editingUser ? '(оставьте пустым, чтобы не менять)' : '*'}
+                                </label>
+                                <div className="relative">
+                                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+                                  <Input
+                                    value={userFormData.password}
+                                    onChange={e => setUserFormData(prev => ({ ...prev, password: e.target.value }))}
+                                    placeholder={editingUser ? 'Новый пароль' : 'Мин. 6 символов'}
+                                    type="password"
+                                    className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
+                                    required={!editingUser}
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="text-white/50 text-sm mb-1.5 block">Роль</label>
+                                <select
+                                  value={userFormData.role}
+                                  onChange={e => setUserFormData(prev => ({ ...prev, role: e.target.value }))}
+                                  className="w-full bg-[#141414] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-[#D4AF37] focus:outline-none"
+                                >
+                                  <option value="client">Клиент</option>
+                                  <option value="manager">Менеджер</option>
+                                  <option value="admin">Администратор</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            <div className="flex gap-3 mt-6">
+                              <Button
+                                onClick={handleSaveUser}
+                                disabled={isLoading}
+                                className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
+                              >
+                                {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                                {editingUser ? 'Сохранить' : 'Создать'}
+                              </Button>
+                              <Button
+                                onClick={resetUserForm}
+                                variant="outline"
+                                className="border-white/10 text-white/60 hover:text-white hover:border-white/20"
+                              >
+                                Отмена
+                              </Button>
+                            </div>
+                          </motion.div>
+                        )}
+
+                        {/* Users Table */}
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b border-white/10">
+                                <th className="text-left text-white/50 py-3 px-2">Пользователь</th>
+                                <th className="text-left text-white/50 py-3 px-2">Роль</th>
+                                <th className="text-left text-white/50 py-3 px-2">Статус</th>
+                                <th className="text-left text-white/50 py-3 px-2 hidden md:table-cell">Объекты</th>
+                                <th className="text-left text-white/50 py-3 px-2 hidden sm:table-cell">Дата</th>
+                                <th className="text-right text-white/50 py-3 px-2">Действия</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {adminData.users.map((u: any) => (
+                                <tr
+                                  key={u.id}
+                                  className={`border-b border-white/5 transition-colors ${
+                                    u.blocked ? 'bg-red-500/5' : 'hover:bg-white/[0.02]'
+                                  }`}
+                                >
+                                  <td className="py-3 px-2">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-9 h-9 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center shrink-0">
+                                        <span className="text-[#D4AF37] font-semibold text-sm">
+                                          {(u.name || u.email)[0].toUpperCase()}
+                                        </span>
+                                      </div>
+                                      <div className="min-w-0">
+                                        <p className="text-white truncate">{u.name || 'Без имени'}</p>
+                                        <p className="text-white/40 text-xs truncate">{u.email}</p>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-2">
+                                    {u.role === 'admin' ? (
+                                      <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-medium">
+                                        Админ
+                                      </span>
+                                    ) : (
+                                      <select
+                                        value={u.role}
+                                        onChange={e => handleRoleChange(u.id, e.target.value)}
+                                        className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#D4AF37] ${
+                                          u.role === 'manager'
+                                            ? 'bg-blue-500/20 text-blue-400'
+                                            : 'bg-[#D4AF37]/20 text-[#D4AF37]'
+                                        }`}
+                                      >
+                                        <option value="client">Клиент</option>
+                                        <option value="manager">Менеджер</option>
+                                      </select>
+                                    )}
+                                  </td>
+                                  <td className="py-3 px-2">
+                                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                      u.blocked
+                                        ? 'bg-red-500/20 text-red-400'
+                                        : 'bg-green-500/20 text-green-400'
+                                    }`}>
+                                      {u.blocked ? 'Заблокирован' : 'Активен'}
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-2 hidden md:table-cell">
+                                    {u.role === 'manager' || u.role === 'admin' ? (
+                                      <span className="text-white/50 text-xs">
+                                        {u._count?.properties ?? '—'} объектов
+                                      </span>
+                                    ) : (
+                                      <span className="text-white/30 text-xs">—</span>
+                                    )}
+                                  </td>
+                                  <td className="py-3 px-2 text-white/40 hidden sm:table-cell">
+                                    {new Date(u.createdAt).toLocaleDateString('ru-RU')}
+                                  </td>
+                                  <td className="py-3 px-2">
+                                    <div className="flex items-center justify-end gap-1">
+                                      <button
+                                        onClick={() => startEditUser(u)}
+                                        className="p-1.5 rounded-lg text-white/40 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors"
+                                        title="Редактировать"
+                                      >
+                                        <Pencil className="w-4 h-4" />
+                                      </button>
+                                      {u.role !== 'admin' && (
+                                        <>
+                                          <button
+                                            onClick={() => handleToggleBlock(u)}
+                                            className={`p-1.5 rounded-lg transition-colors ${
+                                              u.blocked
+                                                ? 'text-red-400 hover:text-green-400 hover:bg-green-500/10'
+                                                : 'text-white/40 hover:text-red-400 hover:bg-red-500/10'
+                                            }`}
+                                            title={u.blocked ? 'Разблокировать' : 'Заблокировать'}
+                                          >
+                                            {u.blocked ? <ShieldCheck className="w-4 h-4" /> : <ShieldOff className="w-4 h-4" />}
+                                          </button>
+                                          <button
+                                            onClick={() => handleDeleteUser(u.id)}
+                                            className="p-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                            title="Удалить"
+                                          >
+                                            <Trash2 className="w-4 h-4" />
+                                          </button>
+                                        </>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Quick Stats for Managers */}
+                      {adminData.users.filter((u: any) => u.role === 'manager').length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                            <BarChart3 className="w-5 h-5 text-[#D4AF37]" /> Статистика менеджеров
+                          </h3>
+                          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {adminData.users
+                              .filter((u: any) => u.role === 'manager')
+                              .map((u: any) => (
+                                <motion.div
+                                  key={u.id}
+                                  whileHover={{ scale: 1.02 }}
+                                  className="bg-[#0B0B0B] rounded-xl p-4 border border-white/5 flex items-center gap-3"
+                                >
+                                  <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0">
+                                    <span className="text-blue-400 font-semibold text-sm">
+                                      {(u.name || u.email)[0].toUpperCase()}
+                                    </span>
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-white text-sm font-medium truncate">{u.name || u.email}</p>
+                                    <p className="text-white/40 text-xs">
+                                      {u._count?.properties ?? 0} объектов
+                                    </p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-[#D4AF37] font-bold">{u._count?.properties ?? 0}</p>
+                                  </div>
+                                </motion.div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Applications */}
+                      <div>
+                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                          <FileText className="w-5 h-5 text-[#D4AF37]" /> Заявки
+                        </h3>
+                        {adminData.applications.length === 0 ? (
+                          <div className="text-center py-8 text-white/40">
+                            <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                            <p>Нет заявок</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2 max-h-96 overflow-y-auto pr-1"
+                            style={{ scrollbarWidth: 'thin', scrollbarColor: '#D4AF37 transparent' }}
+                          >
+                            {adminData.applications.map((app: any) => (
+                              <div key={app.id} className="flex items-center gap-3 p-3 rounded-lg bg-[#0B0B0B] border border-white/5 hover:border-white/10 transition-colors">
+                                <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor[app.status] || 'bg-white/10 text-white/50'}`}>
+                                  {statusLabel[app.status] || app.status}
+                                </span>
+                                <span className="text-white/70 text-sm flex-1">
+                                  {typeLabel[app.type] || app.type} — {app.user?.name || app.user?.email}
+                                </span>
+                                <span className="text-white/30 text-xs">
+                                  {new Date(app.createdAt).toLocaleDateString('ru-RU')}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
