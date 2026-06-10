@@ -275,7 +275,7 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
               </span>
             </div>
 
-            <h1 className="hero-main-heading text-[clamp(2.2rem,9vw,9rem)] font-black leading-[0.9] tracking-tighter text-white uppercase" style={{ opacity: 1 }}>
+            <h1 className="hero-main-heading text-[clamp(2.2rem,9vw,9rem)] font-black leading-[1.05] tracking-tighter text-white uppercase" style={{ opacity: 1 }}>
               ПРЕМИАЛЬНАЯ
               <br />
               <span className="text-outline-gold">НЕДВИЖИМОСТЬ</span>
