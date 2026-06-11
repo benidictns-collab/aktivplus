@@ -142,7 +142,7 @@ export default function CatalogPage() {
       <section className="relative py-16 md:py-24 bg-[#0B0B0B] overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070"
+            src="/images/buy-1.jpg"
             alt="Каталог"
             className="w-full h-full object-cover opacity-15"
           />

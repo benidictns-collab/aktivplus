@@ -26,7 +26,7 @@ interface ImageGalleryProps {
 const defaultImages: GalleryImage[] = [
   {
     id: 1,
-    src: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop',
+    src: '/images/sale-1.jpg',
     alt: 'Пентхаус на Набережной',
     label: 'Пентхаус',
     price: '45 000 000 ₽',
@@ -34,7 +34,7 @@ const defaultImages: GalleryImage[] = [
   },
   {
     id: 2,
-    src: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop',
+    src: '/images/buy-1.jpg',
     alt: 'Коттедж в Западном',
     label: 'Коттедж',
     price: '65 000 000 ₽',
@@ -42,7 +42,7 @@ const defaultImages: GalleryImage[] = [
   },
   {
     id: 3,
-    src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop',
+    src: '/images/interior-1.jpg',
     alt: 'Апартаменты в Центре',
     label: 'Апартаменты',
     price: '28 000 000 ₽',
@@ -50,7 +50,7 @@ const defaultImages: GalleryImage[] = [
   },
   {
     id: 4,
-    src: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2070&auto=format&fit=crop',
+    src: '/images/luxury-1.jpg',
     alt: 'Вилла на Левом берегу',
     label: 'Вилла',
     price: '85 000 000 ₽',
@@ -58,7 +58,7 @@ const defaultImages: GalleryImage[] = [
   },
   {
     id: 5,
-    src: 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?q=80&w=2070&auto=format&fit=crop',
+    src: '/images/apartment-1.jpg',
     alt: 'Таунхаус в Суворовском',
     label: 'Таунхаус',
     price: '32 000 000 ₽',
@@ -66,7 +66,7 @@ const defaultImages: GalleryImage[] = [
   },
   {
     id: 6,
-    src: 'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?q=80&w=2070&auto=format&fit=crop',
+    src: '/images/house-1.jpg',
     alt: 'Студия с панорамным видом',
     label: 'Студия',
     price: '12 500 000 ₽',

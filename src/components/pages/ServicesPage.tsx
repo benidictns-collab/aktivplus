@@ -162,7 +162,7 @@ export default function ServicesPage() {
       <section className="relative py-20 md:py-32 bg-[#0B0B0B] overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=1973"
+            src="/images/service-sale.jpg"
             alt="Услуги"
             className="w-full h-full object-cover opacity-20"
           />
@@ -255,7 +255,7 @@ export default function ServicesPage() {
             <div>
               <div className="rounded-2xl overflow-hidden">
                 <img
-                  src="https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?q=80&w=2070"
+                  src="/images/service-buy.jpg"
                   alt="Преимущества"
                   className="w-full h-[400px] object-cover"
                 />

@@ -27,7 +27,7 @@ export default function AboutPage() {
       <section className="relative py-20 md:py-32 bg-[#0B0B0B] overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069"
+            src="/images/about-office.jpg"
             alt="О компании"
             className="w-full h-full object-cover opacity-20"
           />
@@ -76,7 +76,7 @@ export default function AboutPage() {
             <div className="relative">
               <div className="rounded-2xl overflow-hidden">
                 <img
-                  src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069"
+                  src="/images/about-office.jpg"
                   alt="История компании"
                   className="w-full h-[400px] object-cover"
                 />

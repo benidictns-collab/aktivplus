@@ -83,7 +83,7 @@ export default function AboutSection() {
           <div className="relative max-w-lg mx-auto lg:max-w-none">
             <div className="relative rounded-2xl overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069"
+                src="/images/about-office.jpg"
                 alt="О компании Актив Плюс"
                 className="w-full h-[300px] md:h-[500px] object-cover"
               />

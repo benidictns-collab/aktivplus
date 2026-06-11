@@ -42,7 +42,7 @@ const defaultOptions: SelectorOption[] = [
       'Полное сопровождение сделки',
       'Гарантия безопасности расчётов',
     ],
-    image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=1973',
+    image: '/images/service-sale.jpg',
     icon: <Home size={22} className="text-[#D4AF37]" />,
   },
   {
@@ -58,7 +58,7 @@ const defaultOptions: SelectorOption[] = [
       'Помощь в оформлении ипотеки',
       'Защита интересов покупателя',
     ],
-    image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?q=80&w=2070',
+    image: '/images/service-buy.jpg',
     icon: <Key size={22} className="text-[#D4AF37]" />,
   },
   {
@@ -74,7 +74,7 @@ const defaultOptions: SelectorOption[] = [
       'Работа с жилой и коммерческой недвижимостью',
       'Оперативный поиск — от 1 дня',
     ],
-    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=2070',
+    image: '/images/service-rent.jpg',
     icon: <Building size={22} className="text-[#D4AF37]" />,
   },
   {
@@ -90,7 +90,7 @@ const defaultOptions: SelectorOption[] = [
       'Юридическая проверка документов',
       'Помощь в переоборудовании помещений',
     ],
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069',
+    image: '/images/service-commercial.jpg',
     icon: <Briefcase size={22} className="text-[#D4AF37]" />,
   },
   {
@@ -106,7 +106,7 @@ const defaultOptions: SelectorOption[] = [
       'Документальное сопровождение инвестиций',
       'Мониторинг объектов после покупки',
     ],
-    image: 'https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?q=80&w=2070',
+    image: '/images/service-invest.jpg',
     icon: <TrendingUp size={22} className="text-[#D4AF37]" />,
   },
   {
@@ -122,7 +122,7 @@ const defaultOptions: SelectorOption[] = [
       'Безопасные расчёты через банк',
       'Регистрация в Росреестре',
     ],
-    image: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=2070',
+    image: '/images/service-legal.jpg',
     icon: <Scale size={22} className="text-[#D4AF37]" />,
   },
 ];

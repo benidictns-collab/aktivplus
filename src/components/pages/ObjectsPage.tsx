@@ -16,7 +16,7 @@ export default function ObjectsPage() {
       <section className="relative py-20 md:py-32 bg-[#0B0B0B] overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075"
+            src="/images/sale-1.jpg"
             alt="Наши объекты"
             className="w-full h-full object-cover opacity-20"
           />
