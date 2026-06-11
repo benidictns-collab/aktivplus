@@ -184,10 +184,10 @@ async function main() {
   // Create superadmin
   const adminPassword = await bcrypt.hash('24345678Fe', 12);
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@aktivplus.ru' },
+    where: { email: 'admin@aktivplus-agency.ru' },
     update: {},
     create: {
-      email: 'admin@aktivplus.ru',
+      email: 'admin@aktivplus-agency.ru',
       name: 'Администратор',
       phone: '+7 (863) 000-00-00',
       password: adminPassword,
@@ -200,10 +200,10 @@ async function main() {
   // Create a demo manager for seed properties
   const managerPassword = await bcrypt.hash('manager123456', 12);
   const manager = await prisma.user.upsert({
-    where: { email: 'manager@aktivplus.ru' },
+    where: { email: 'manager@aktivplus-agency.ru' },
     update: {},
     create: {
-      email: 'manager@aktivplus.ru',
+      email: 'manager@aktivplus-agency.ru',
       name: 'Анатолий Волков',
       phone: '+7 (863) 000-00-01',
       password: managerPassword,

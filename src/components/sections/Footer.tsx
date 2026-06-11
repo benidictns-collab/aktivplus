@@ -66,9 +66,9 @@ export default function Footer() {
                 <Phone className="w-4 h-4 text-[#D4AF37]" />
                 +7 (863) 000-00-00
               </a>
-              <a href="mailto:info@aktivplus.ru" className="flex items-center gap-3 text-white/60 text-sm hover:text-[#D4AF37] transition-colors">
+              <a href="mailto:info@aktivplus-agency.ru" className="flex items-center gap-3 text-white/60 text-sm hover:text-[#D4AF37] transition-colors">
                 <Mail className="w-4 h-4 text-[#D4AF37]" />
-                info@aktivplus.ru
+                info@aktivplus-agency.ru
               </a>
             </div>
 

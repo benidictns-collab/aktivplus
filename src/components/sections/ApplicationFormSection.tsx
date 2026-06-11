@@ -80,7 +80,7 @@ export default function ApplicationFormSection() {
                 </div>
                 <div>
                   <div className="text-sm text-white/40">Email</div>
-                  <div className="text-white">info@aktivplus.ru</div>
+                  <div className="text-white">info@aktivplus-agency.ru</div>
                 </div>
               </div>
             </div>
