@@ -32,7 +32,7 @@ export const FlowSection: React.FC<FlowSectionProps> = ({
     <div
       data-flow-inner
       className={cx(
-        'flow-art-container relative flex min-h-screen w-full flex-col justify-between gap-10 px-[4vw] pt-[clamp(2rem,8vw,4vw)] pb-[4vw]',
+        'flow-art-container relative flex min-h-screen w-full flex-col justify-between gap-10 px-[4vw] pt-[clamp(2rem,8vw,4vw)] pb-[4vw] will-change-transform',
       )}
       style={{ ...style }}
     >
@@ -74,6 +74,8 @@ const FlowArt: React.FC<FlowArtProps> = ({
       );
       if (sections.length === 0) return;
 
+      const isMobile = window.innerWidth < 768;
+
       const triggers: ScrollTrigger[] = [];
 
       // Stack: later sections render on top
@@ -92,13 +94,14 @@ const FlowArt: React.FC<FlowArtProps> = ({
               end: 'bottom top',
               pin: true,
               pinSpacing: false,
+              pinReparent: isMobile,
             }),
           );
         }
       });
 
-      // Very subtle scale-down on outgoing section for depth feeling
-      // No opacity changes, no translations — just a light scale
+      // Scale-down on outgoing section for depth feeling
+      // On mobile: lighter effect with longer scrub for smoothness
       sections.forEach((section, i) => {
         if (i === 0) return;
 
@@ -106,13 +109,14 @@ const FlowArt: React.FC<FlowArtProps> = ({
         if (!prevInner) return;
 
         const tween = gsap.to(prevInner, {
-          scale: 0.96,
+          scale: isMobile ? 0.98 : 0.96,
           ease: 'none',
+          force3D: true,
           scrollTrigger: {
             trigger: section,
             start: 'top bottom',
             end: 'top top',
-            scrub: 3,
+            scrub: isMobile ? 1.5 : 3,
           },
         });
         if (tween.scrollTrigger) triggers.push(tween.scrollTrigger);
