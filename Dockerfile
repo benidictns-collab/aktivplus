@@ -21,11 +21,16 @@ COPY . .
 # Generate Prisma client
 RUN npx prisma generate
 
-# Build Next.js
-ENV NODE_OPTIONS=--max-old-space-size=4096
+# Build Next.js (standalone output enabled in next.config.ts)
+ENV NODE_OPTIONS=--max-old-space-size=2048
 RUN npm run build
 
-# Production image - copy only necessary files
+# Pre-create the database during build
+RUN mkdir -p /app/db && \
+    DATABASE_URL="file:/app/db/custom.db" npx prisma db push --accept-data-loss && \
+    node db-setup.cjs
+
+# Production image - copy only necessary files from standalone output
 FROM base AS runner
 RUN apk add --no-cache openssl
 WORKDIR /app
@@ -33,25 +38,27 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
-ENV NODE_OPTIONS=--max-old-space-size=4096
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy built application
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/production-server.cjs ./production-server.cjs
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+# Copy standalone server output (includes only needed node_modules)
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# Create necessary directories with write permissions
-RUN mkdir -p db public/uploads/properties && \
-    chown -R nextjs:nodejs db public/uploads .next
+# Copy pre-created database with seeded data
+COPY --from=builder --chown=nextjs:nodejs /app/db ./db
+
+# Ensure upload directory exists
+RUN mkdir -p public/uploads/properties && \
+    chown -R nextjs:nodejs db public/uploads
 
 USER nextjs
 
 EXPOSE 3000
 
-CMD ["node", "production-server.cjs"]
+# Set DATABASE_URL to the pre-created database
+ENV DATABASE_URL="file:/app/db/custom.db"
+
+CMD ["node", "server.js"]
