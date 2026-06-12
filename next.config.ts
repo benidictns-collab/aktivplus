@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: true,
+  // Trust the Timeweb Cloud reverse proxy headers
+  // This ensures Next.js correctly detects HTTPS via X-Forwarded-Proto
+  // and generates proper URLs for assets, redirects, etc.
+  serverExternalPackages: [],
   images: {
     remotePatterns: [
       {
