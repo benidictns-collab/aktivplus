@@ -307,7 +307,7 @@ export const reviews = [
 export const advantages = [
   {
     title: "Надёжность",
-    description: "15 лет на рынке недвижимости Ростова-на-Дону. Доверие тысяч клиентов.",
+    description: "17 лет на рынке недвижимости Ростова-на-Дону. Доверие тысяч клиентов.",
     icon: "Shield",
   },
   {

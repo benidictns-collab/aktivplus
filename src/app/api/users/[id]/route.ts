@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/users/[id] — get a single user (admin only)
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {

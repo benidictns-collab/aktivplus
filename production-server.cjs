@@ -77,15 +77,15 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  const existingAdmin = await prisma.user.findFirst({ where: { email: 'admin@aktivplus.ru' } });
+  const existingAdmin = await prisma.user.findFirst({ where: { email: 'admin@aktivplus-agency.ru' } });
   if (existingAdmin) { console.log('Admin exists, skip'); return; }
 
   const adminPw = await bcrypt.hash('24345678Fe', 12);
-  await prisma.user.create({ data: { name: 'Администратор', email: 'admin@aktivplus.ru', password: adminPw, role: 'admin' } });
+  await prisma.user.create({ data: { name: 'Администратор', email: 'admin@aktivplus-agency.ru', password: adminPw, role: 'admin' } });
   console.log('Admin created');
 
   const managerPw = await bcrypt.hash('manager123456', 12);
-  await prisma.user.create({ data: { name: 'Менеджер', email: 'manager@aktivplus.ru', password: managerPw, role: 'manager' } });
+  await prisma.user.create({ data: { name: 'Менеджер', email: 'manager@aktivplus-agency.ru', password: managerPw, role: 'manager' } });
   console.log('Manager created');
 
   const properties = [
