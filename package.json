@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
+    "prisma": "^6.11.1",
     "@hookform/resolvers": "^5.1.1",
     "@prisma/client": "^6.11.1",
     "@radix-ui/react-accordion": "^1.2.11",
@@ -89,7 +90,6 @@
     "@types/three": "^0.184.1",
     "eslint": "^9",
     "eslint-config-next": "^16.1.1",
-    "prisma": "^6.11.1",
     "tsx": "^4.19.0",
     "typescript": "^5"
   }
