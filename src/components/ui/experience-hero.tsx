@@ -359,7 +359,7 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
             </div>
             <div className="flex-1">
               <p className="text-[10px] font-mono text-white/30 uppercase tracking-wider">Звоните прямо сейчас</p>
-              <p className="text-sm font-semibold text-white">+7 (863) 000-00-00</p>
+              <p className="text-sm font-semibold text-white">+7 (900) 120-13-15</p>
             </div>
           </div>
         </div>

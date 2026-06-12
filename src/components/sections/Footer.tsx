@@ -62,9 +62,9 @@ export default function Footer() {
                 <MapPin className="w-4 h-4 text-[#D4AF37]" />
                 г. Ростов-на-Дону, ул. Обороны д. 49/22
               </div>
-              <a href="tel:+78630000000" className="flex items-center gap-3 text-white/60 text-sm hover:text-[#D4AF37] transition-colors">
+              <a href="tel:+79001201315" className="flex items-center gap-3 text-white/60 text-sm hover:text-[#D4AF37] transition-colors">
                 <Phone className="w-4 h-4 text-[#D4AF37]" />
-                +7 (863) 000-00-00
+                +7 (900) 120-13-15
               </a>
               <a href="mailto:info@aktivplus-agency.ru" className="flex items-center gap-3 text-white/60 text-sm hover:text-[#D4AF37] transition-colors">
                 <Mail className="w-4 h-4 text-[#D4AF37]" />
@@ -109,10 +109,10 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="gold-divider mt-12 mb-6" />
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/40">
-          <p>© 2024 Актив Плюс. Все права защищены.</p>
+          <p>© 2009–2026 Актив Плюс. Все права защищены.</p>
           <div className="flex items-center gap-6">
-            <button className="hover:text-[#D4AF37] transition-colors">Политика конфиденциальности</button>
-            <button className="hover:text-[#D4AF37] transition-colors">Пользовательское соглашение</button>
+            <button onClick={() => navigate('privacy')} className="hover:text-[#D4AF37] transition-colors">Политика конфиденциальности</button>
+            <button onClick={() => navigate('terms')} className="hover:text-[#D4AF37] transition-colors">Пользовательское соглашение</button>
           </div>
         </div>
       </div>

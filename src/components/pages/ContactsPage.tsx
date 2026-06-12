@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const contacts = [
   { icon: MapPin, title: 'Адрес', value: 'г. Ростов-на-Дону, ул. Обороны д. 49/22', link: null },
-  { icon: Phone, title: 'Телефон', value: '+7 (863) 000-00-00', link: 'tel:+78630000000' },
+  { icon: Phone, title: 'Телефон', value: '+7 (900) 120-13-15', link: 'tel:+79001201315' },
   { icon: Mail, title: 'Email', value: 'info@aktivplus-agency.ru', link: 'mailto:info@aktivplus-agency.ru' },
   { icon: Clock, title: 'Режим работы', value: 'Пн-Пт: 9:00-19:00, Сб: 10:00-16:00', link: null },
 ];

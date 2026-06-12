@@ -55,7 +55,7 @@ export default function MapSection() {
                   <Phone className="w-5 h-5 text-[#D4AF37] shrink-0 mt-0.5" />
                   <div>
                     <div className="text-white text-sm font-medium">Телефон</div>
-                    <div className="text-white/60 text-sm">+7 (863) 000-00-00</div>
+                    <div className="text-white/60 text-sm">+7 (900) 120-13-15</div>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

@@ -131,7 +131,7 @@ export default function PropertyModal() {
   const managerInitials = property.manager?.name
     ? property.manager.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
     : 'МН';
-  const managerPhone = property.manager?.phone || '+7 (863) 000-00-01';
+  const managerPhone = property.manager?.phone || '+7 (900) 120-13-15';
 
   return (
     <Dialog open={isPropertyModalOpen} onOpenChange={(open) => !open && closePropertyModal()}>

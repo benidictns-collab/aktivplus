@@ -8,7 +8,9 @@ export type PageName =
   | "services"
   | "contacts"
   | "cabinet"
-  | "dashboard";
+  | "dashboard"
+  | "privacy"
+  | "terms";
 
 interface NavigationState {
   currentPage: PageName;

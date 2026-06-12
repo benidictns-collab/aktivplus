@@ -189,7 +189,7 @@ async function main() {
     create: {
       email: 'admin@aktivplus-agency.ru',
       name: 'Администратор',
-      phone: '+7 (863) 000-00-00',
+      phone: '+7 (900) 120-13-15',
       password: adminPassword,
       role: 'admin',
     },
@@ -205,7 +205,7 @@ async function main() {
     create: {
       email: 'manager@aktivplus-agency.ru',
       name: 'Анатолий Волков',
-      phone: '+7 (863) 000-00-01',
+      phone: '+7 (900) 120-13-15',
       password: managerPassword,
       role: 'manager',
     },

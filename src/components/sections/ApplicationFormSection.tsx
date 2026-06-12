@@ -71,7 +71,7 @@ export default function ApplicationFormSection() {
                 </div>
                 <div>
                   <div className="text-sm text-white/40">Телефон</div>
-                  <div className="text-white">+7 (863) 000-00-00</div>
+                  <div className="text-white">+7 (900) 120-13-15</div>
                 </div>
               </div>
               <div className="flex items-center gap-3 text-white/70">

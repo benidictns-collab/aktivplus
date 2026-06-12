@@ -97,11 +97,11 @@ export default function Header() {
             {/* Desktop CTA */}
             <div className="hidden xl:flex items-center gap-2 justify-end">
               <a
-                href="tel:+78630000000"
+                href="tel:+79001201315"
                 className="text-white/80 hover:text-[#D4AF37] text-sm flex items-center gap-2 transition-colors"
               >
                 <Phone className="w-4 h-4 text-[#D4AF37]" />
-                <span className="font-medium">+7 (863) 000-00-00</span>
+                <span className="font-medium">+7 (900) 120-13-15</span>
               </a>
               <Button
                 size="sm"
@@ -153,11 +153,11 @@ export default function Header() {
             <div className="w-full px-10 pb-10 space-y-4">
               <div className="border-t border-[#D4AF37]/20 pt-6">
                 <a
-                  href="tel:+78630000000"
+                  href="tel:+79001201315"
                   className="text-[#D4AF37] flex items-center gap-3 text-lg py-2"
                 >
                   <Phone className="w-5 h-5" />
-                  <span className="font-medium">+7 (863) 000-00-00</span>
+                  <span className="font-medium">+7 (900) 120-13-15</span>
                 </a>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 max-w-md">

@@ -24,6 +24,8 @@ import ServicesPage from '@/components/pages/ServicesPage';
 import ContactsPage from '@/components/pages/ContactsPage';
 import CabinetPage from '@/components/pages/CabinetPage';
 import DashboardPage from '@/components/pages/DashboardPage';
+import PrivacyPage from '@/components/pages/PrivacyPage';
+import TermsPage from '@/components/pages/TermsPage';
 
 function HomePage() {
   return (
@@ -49,6 +51,8 @@ const pageComponents: Record<string, React.ComponentType> = {
   contacts: ContactsPage,
   cabinet: CabinetPage,
   dashboard: DashboardPage,
+  privacy: PrivacyPage,
+  terms: TermsPage,
 };
 
 export default function MainPage() {
