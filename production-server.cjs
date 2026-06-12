@@ -4,8 +4,16 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+// Set NODE_ENV if not already set
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = 'production';
+}
+
 const port = parseInt(process.env.PORT || '3000', 10);
-const hostname = process.env.HOSTNAME || '0.0.0.0';
+// CRITICAL: Always listen on 0.0.0.0 — NOT on process.env.HOSTNAME!
+// In Docker, HOSTNAME is the container ID (e.g. "56fb3471fac2"),
+// and the load balancer cannot reach the server unless it listens on 0.0.0.0
+const hostname = '0.0.0.0';
 
 // Ensure DATABASE_URL is set with absolute path
 if (!process.env.DATABASE_URL || process.env.DATABASE_URL.startsWith('file:./')) {
@@ -30,7 +38,7 @@ let dbReady = false;
 
 // Prepare Next.js FIRST, then start listening, THEN do DB setup
 console.log('[server] Preparing Next.js...');
-const app = next({ dev: false });
+const app = next({ dev: false, hostname, port });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
@@ -59,7 +67,7 @@ app.prepare().then(() => {
     }
   });
 
-  // Start listening IMMEDIATELY - before any DB setup
+  // Start listening IMMEDIATELY on 0.0.0.0 - before any DB setup
   server.listen(port, hostname, () => {
     console.log('[server] ✅ Ready on http://' + hostname + ':' + port);
     console.log('[server] Health check: http://' + hostname + ':' + port + '/api/health');
