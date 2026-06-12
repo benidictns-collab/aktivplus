@@ -56,9 +56,9 @@ app.prepare().then(() => {
     process.exit(1);
   });
 
-  server.timeout = 120000;
-  server.keepAliveTimeout = 65000;
-  server.headersTimeout = 66000;
+  server.timeout = 300000;
+  server.keepAliveTimeout = 120000;
+  server.headersTimeout = 121000;
 
 }).catch((err) => {
   console.error('[server] Prepare error:', err);
@@ -67,12 +67,21 @@ app.prepare().then(() => {
 
 // Graceful shutdown
 process.on('uncaughtException', (err) => {
-  console.error('[server] Uncaught:', err.message);
+  console.error('[server] Uncaught:', err.message, err.stack?.slice(0, 500));
 });
 
 process.on('unhandledRejection', (err) => {
   console.error('[server] Unhandled rejection:', err);
 });
 
-process.on('SIGTERM', () => { process.exit(0); });
-process.on('SIGINT', () => { process.exit(0); });
+process.on('SIGTERM', () => {
+  console.log('[server] SIGTERM received, shutting down...');
+  process.exit(0);
+});
+process.on('SIGINT', () => {
+  console.log('[server] SIGINT received, shutting down...');
+  process.exit(0);
+});
+process.on('exit', (code) => {
+  console.log('[server] Process exiting with code:', code);
+});

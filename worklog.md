@@ -56,3 +56,32 @@ Stage Summary:
 - Key changes: removed AnimatePresence/motion.div wrappers, fixed clientTabs mutation
 - All changes are in /home/z/my-project/src/components/pages/CabinetPage.tsx
 - Production build succeeds
+
+---
+Task ID: deploy-fix
+Agent: Main Agent
+Task: Fix deployment error and ensure project runs correctly
+
+Work Log:
+- Diagnosed that the project builds successfully with `npm run build`
+- Found database was out of sync - ran `prisma db push` to sync schema
+- Re-seeded database with `prisma db seed` (6 properties, admin + manager users)
+- Discovered Prisma query logging was enabled in production, causing unnecessary overhead
+- Fixed `src/lib/db.ts` to use `log: ['error']` in production instead of `log: ['query']`
+- Updated `production-server.cjs` with improved timeouts and better error handling
+- Updated `Dockerfile` to use `NODE_OPTIONS=--max-old-space-size=4096` and `CMD ["node", "production-server.cjs"]`
+- Verified all endpoints work correctly:
+  - Health API: returns 200 with status ok
+  - Main page: returns 200 with 64744 bytes (SSR with 3D hero section)
+  - Properties API: returns 6 properties
+  - Admin login: works (admin@aktivplus-agency.ru / 24345678Fe)
+  - Manager login: works (manager@aktivplus-agency.ru / manager123456)
+- Server memory usage is stable at ~197MB RSS
+- Caddy reverse proxy on port 81 forwards to Node.js on port 3000
+
+Stage Summary:
+- Project fully builds and runs in production mode
+- All API endpoints verified working
+- Database properly seeded with demo data
+- Prisma logging optimized for production
+- Server configuration improved for stability

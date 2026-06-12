@@ -34,6 +34,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
+ENV NODE_OPTIONS=--max-old-space-size=4096
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -42,8 +43,8 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/db-setup.cjs ./db-setup.cjs
 COPY --from=builder /app/production-server.cjs ./production-server.cjs
+COPY --from=builder /app/db-setup.cjs ./db-setup.cjs
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
@@ -58,4 +59,4 @@ USER nextjs
 
 EXPOSE 3000
 
-CMD ["npx", "next", "start", "-p", "3000", "-H", "0.0.0.0"]
+CMD ["node", "production-server.cjs"]
