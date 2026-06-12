@@ -85,3 +85,47 @@ Stage Summary:
 - Database properly seeded with demo data
 - Prisma logging optimized for production
 - Server configuration improved for stability
+
+---
+Task ID: deploy-fix-v2
+Agent: Main Agent
+Task: Fix deployment error on space-z.ai platform (https://aktivplus-agency.space-z.ai/)
+
+Work Log:
+- Analyzed Dockerfile issues causing deployment failures:
+  1. `npm ci` with both bun.lock and package-lock.json causing conflicts
+  2. `RUN node db-setup.cjs` at build time tried to exec prisma which may fail in Docker
+  3. Missing `.dockerignore` causing slow/incomplete builds
+  4. Missing `openssl` package in Alpine for Prisma SQLite
+  5. Double DB initialization (db-init.ts + production-server.cjs) causing conflicts
+- Rewrote Dockerfile:
+  - Added `openssl` to Alpine for Prisma
+  - Removed `bun.lock` from COPY (only use package-lock.json)
+  - Removed `RUN node db-setup.cjs` build step
+  - Added `NODE_OPTIONS=--max-old-space-size=4096` for build step
+  - DB initialization moved entirely to runtime (production-server.cjs)
+- Rewrote production-server.cjs:
+  - Added database initialization with schema push and seeding before Next.js starts
+  - If DB is empty, automatically creates admin + manager + 6 properties
+  - If DB exists, skips seeding
+  - Robust error handling - server starts even if DB init has issues
+- Simplified instrumentation.ts:
+  - Removed duplicate DB init logic (now handled by production-server.cjs)
+  - Only logs server start message
+- Created .dockerignore to exclude node_modules, .next, skills, etc.
+- Verified npm ci works in clean directory (Docker simulation)
+- Verified npm run build completes successfully
+- Verified production server starts from scratch (fresh DB) and serves all endpoints
+- Agent Browser test confirmed all sections render correctly:
+  - Hero with 3D Three.js background ✅
+  - Navigation (5 items + SPA routing) ✅
+  - 6 property cards ✅
+  - Services, About, Contacts pages ✅
+  - No JavaScript errors ✅
+
+Stage Summary:
+- Dockerfile completely rewritten for reliable deployment
+- Database initialization moved from build-time to runtime
+- Production server auto-seeds on first run
+- All browser tests pass
+- Ready for redeployment on space-z.ai
