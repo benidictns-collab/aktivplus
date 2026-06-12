@@ -42,6 +42,7 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/db-setup.cjs ./db-setup.cjs
 COPY --from=builder /app/production-server.cjs ./production-server.cjs
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
@@ -50,8 +51,11 @@ COPY --from=builder /app/package.json ./package.json
 RUN mkdir -p db public/uploads/properties && \
     chown -R nextjs:nodejs db public/uploads .next
 
+# Run database setup before starting
+RUN node db-setup.cjs
+
 USER nextjs
 
 EXPOSE 3000
 
-CMD ["node", "production-server.cjs"]
+CMD ["npx", "next", "start", "-p", "3000", "-H", "0.0.0.0"]

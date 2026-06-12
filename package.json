@@ -6,14 +6,15 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "prisma generate && next build",
-    "start": "node production-server.cjs",
+    "start": "next start -p ${PORT:-3000} -H 0.0.0.0",
+    "start:custom": "node production-server.cjs",
     "lint": "eslint .",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:reset": "prisma migrate reset",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate && node db-setup.cjs"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
