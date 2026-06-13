@@ -17,7 +17,7 @@ export async function initDatabase() {
 
 async function _initDatabase() {
   if (!process.env.DATABASE_URL) {
-    console.error('[db-init] DATABASE_URL is not set. Cannot initialize database.');
+    console.error('[db-init] DATABASE_URL is not set.');
     initialized = true;
     return;
   }
@@ -27,22 +27,32 @@ async function _initDatabase() {
   });
 
   try {
-    // Check if database is accessible
-    await prisma.$queryRaw`SELECT 1`;
+    // Quick connectivity check (2 second timeout)
+    await Promise.race([
+      prisma.$queryRaw`SELECT 1`,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 5000)),
+    ]);
     console.log('[db-init] Database is accessible');
 
-    // Check if tables exist by counting users
+    // Check if tables exist and seed if needed
     let userCount = 0;
     try {
       userCount = await prisma.user.count();
     } catch {
+      // Tables don't exist — run prisma db push asynchronously (non-blocking)
       console.log('[db-init] Tables do not exist yet, running prisma db push...');
       try {
-        const { execSync } = await import('child_process');
-        execSync('npx prisma db push --accept-data-loss', {
-          stdio: 'pipe',
-          env: { ...process.env },
-          timeout: 60000,
+        const { exec } = await import('child_process');
+        await new Promise<void>((resolve, reject) => {
+          const child = exec('npx prisma db push --accept-data-loss', {
+            env: { ...process.env },
+            timeout: 30000,
+          }, (error) => {
+            if (error) reject(error);
+            else resolve();
+          });
+          child.stdout?.on('data', (data: Buffer) => process.stdout.write(data));
+          child.stderr?.on('data', (data: Buffer) => process.stderr.write(data));
         });
         console.log('[db-init] Schema pushed successfully');
         userCount = await prisma.user.count();

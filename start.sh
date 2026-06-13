@@ -1,21 +1,36 @@
 #!/bin/sh
 # Start script for Timeweb Cloud App deployment
-# Assembles DATABASE_URL and starts Next.js immediately
-# Database initialization happens inside Next.js via instrumentation.ts
+# Assembles DATABASE_URL with proper URL encoding and starts Next.js immediately
 
 echo "========================================="
 echo "[start] Aktiv Plus — Starting"
 echo "========================================="
 
-# Ensure binding to all interfaces (required by PaaS)
-export HOSTNAME=${HOSTNAME:-0.0.0.0}
+# CRITICAL: Force bind to all interfaces
+# In PaaS containers, HOSTNAME is pre-set to the container ID,
+# so we MUST force it to 0.0.0.0 — do NOT use ${HOSTNAME:-0.0.0.0}
+export HOSTNAME=0.0.0.0
 export PORT=${PORT:-3000}
+
+echo "[start] Will listen on ${HOSTNAME}:${PORT}"
 
 # If DATABASE_URL is not set, build it from Timeweb PostgreSQL variables
 if [ -z "$DATABASE_URL" ]; then
   if [ -n "$POSTGRESQL_HOST" ]; then
-    export DATABASE_URL="postgresql://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DBNAME}"
+    # RFC 3986 URL-encode username and password using Node.js
+    # Handles special chars like =!()*@# etc. in PostgreSQL passwords
+    ENCODED_USER=$(node -e "
+      const s=process.argv[1];
+      console.log(s.replace(/[^A-Za-z0-9]/g,c=>'%'+c.charCodeAt(0).toString(16).toUpperCase().padStart(2,'0')));
+    " "$POSTGRESQL_USER")
+    ENCODED_PASS=$(node -e "
+      const s=process.argv[1];
+      console.log(s.replace(/[^A-Za-z0-9]/g,c=>'%'+c.charCodeAt(0).toString(16).toUpperCase().padStart(2,'0')));
+    " "$POSTGRESQL_PASSWORD")
+
+    export DATABASE_URL="postgresql://${ENCODED_USER}:${ENCODED_PASS}@${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DBNAME}"
     echo "[start] DATABASE_URL assembled from POSTGRESQL_* variables"
+    echo "[start] Database host: ${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DBNAME}"
   else
     echo "[start] WARNING: Neither DATABASE_URL nor POSTGRESQL_* variables are set!"
     echo "[start] App will start but database features will not work"
@@ -24,7 +39,7 @@ else
   echo "[start] DATABASE_URL is already set"
 fi
 
-# Start Next.js server IMMEDIATELY
-# Database migrations and seeding happen inside the app via instrumentation.ts
-echo "[start] Starting Next.js server on ${HOSTNAME}:${PORT}..."
-exec npx next start -p $PORT -H $HOSTNAME
+# Start Next.js server IMMEDIATELY using direct binary (not npx)
+# Database initialization happens inside the app via instrumentation.ts
+echo "[start] Starting Next.js server..."
+exec ./node_modules/.bin/next start -p "$PORT" -H "$HOSTNAME"
