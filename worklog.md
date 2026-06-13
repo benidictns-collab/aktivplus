@@ -80,3 +80,30 @@ Stage Summary:
 - Public URL (https://aktivplus-agency.space-z.ai/) may need platform redeploy to pick up the changes
 - All 32 images verified present and referenced correctly
 - Database seeded with 6 properties, admin user, manager user
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix Aktiv Plus real estate website for public URL https://aktivplus-agency.space-z.ai/
+
+Work Log:
+- Examined project structure and configuration
+- Identified Docker-specific files (Caddyfile, keep-alive.sh, start-server.sh)
+- Found missing output: 'standalone' in next.config.ts causing production deployment failure
+- Added output: 'standalone' and serverExternalPackages: ['bcryptjs'] to next.config.ts
+- Fixed instrumentation.ts to support both sandbox and production database paths
+- Updated dev.sh to use standalone server (node .next/standalone/server.js) instead of next start
+- Copied database to db/custom.db for production deployment
+- Successfully ran build.sh to create deployment package (65MB tar.gz)
+- Pushed changes to Git repository (3 commits)
+- Verified standalone server works correctly locally
+- All endpoints verified working: /, /api/health, /api/properties
+- Public URL still returns 502 Bad Gateway - FC service routing issue
+
+Stage Summary:
+- Project is fully functional locally on both port 3000 and 81 (via Caddy)
+- Standalone build output verified working
+- Database properly seeded with 2 users and 6 properties
+- All images present and accessible
+- 502 Bad Gateway on public URL is a platform-level FC routing issue
+- The FC service (Alibaba Cloud Function Compute) cannot reach the container's port 81
+- This is outside the sandbox's control - needs platform-level deployment fix
