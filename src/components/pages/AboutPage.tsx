@@ -12,12 +12,9 @@ const values = [
 ];
 
 const team = [
-  { name: 'Анатолий Смирнов', role: 'Генеральный директор', avatar: 'АС' },
-  { name: 'Елена Козлова', role: 'Руководитель отдела продаж', avatar: 'ЕК' },
-  { name: 'Дмитрий Волков', role: 'Ведущий юрист', avatar: 'ДВ' },
-  { name: 'Марина Иванова', role: 'Менеджер по работе с клиентами', avatar: 'МИ' },
-  { name: 'Сергей Петров', role: 'Специалист по коммерческой недвижимости', avatar: 'СП' },
-  { name: 'Ольга Новикова', role: 'Специалист по новостройкам', avatar: 'ОН' },
+  { name: 'Михеев А.Ю.', role: 'Генеральный директор', avatar: 'МЮ' },
+  { name: 'Михеева М.В.', role: 'Руководитель Агентства недвижимости АктивПлюс', avatar: 'МВ' },
+  { name: 'Рядинская А.Е.', role: 'Ведущий Агент по недвижимости', avatar: 'РА' },
 ];
 
 export default function AboutPage() {
@@ -140,7 +137,7 @@ export default function AboutPage() {
               Профессионалы с многолетним опытом работы в сфере недвижимости
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-3xl mx-auto">
             {team.map((member) => (
               <div
                 key={member.name}
