@@ -57,4 +57,5 @@ server.log
 # SQLite database (not used with PostgreSQL)
 *.db
 prisma/data.db
-upload/
+# Upload directory at project root only (NOT src/app/api/upload)
+/upload/
