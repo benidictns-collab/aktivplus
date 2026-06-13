@@ -5,7 +5,7 @@ import { FileText } from 'lucide-react';
 
 export default function TermsPage() {
   return (
-    <div className="pt-28 pb-20 min-h-screen bg-[#0B0B0B]">
+    <div className="pt-32 pb-20 min-h-screen bg-[#0B0B0B]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <div className="mb-12">
