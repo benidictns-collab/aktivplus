@@ -93,4 +93,12 @@ model Message {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model ImageAsset {
+  id        String   @id @default(cuid())
+  data      Bytes    // Binary image data stored in PostgreSQL (BYTEA)
+  mimeType  String   // image/jpeg, image/png, image/webp
+  size      Int      // File size in bytes
+  createdAt DateTime @default(now())
+}
+
 

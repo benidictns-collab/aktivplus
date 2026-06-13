@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { db } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
-
-// Upload directory — works in both sandbox and PaaS
-const UPLOAD_DIR = process.env.UPLOAD_DIR || join(process.cwd(), 'upload');
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,24 +29,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate unique filename with original extension
-    const ext = file.name.split('.').pop() || 'jpg';
-    const filename = `${uuidv4()}.${ext}`;
-
-    // Ensure upload directory exists
-    await mkdir(UPLOAD_DIR, { recursive: true });
-
-    // Write file to disk
-    const filePath = join(UPLOAD_DIR, filename);
+    // Read file as ArrayBuffer and store in PostgreSQL
     const bytes = await file.arrayBuffer();
-    await writeFile(filePath, Buffer.from(bytes));
+    const buffer = Buffer.from(bytes);
 
-    // Return the URL served by /api/images/[filename]
-    const url = `/api/images/${filename}`;
+    const imageAsset = await db.imageAsset.create({
+      data: {
+        data: buffer,
+        mimeType: file.type || 'image/jpeg',
+        size: buffer.length,
+      },
+    });
 
-    console.log('[upload] File saved:', filename, 'size:', file.size);
+    // Return the URL served by /api/images/[id]
+    const url = `/api/images/${imageAsset.id}`;
 
-    return NextResponse.json({ url, filename });
+    console.log('[upload] File saved to DB:', imageAsset.id, 'size:', buffer.length);
+
+    return NextResponse.json({ url, id: imageAsset.id });
   } catch (error) {
     console.error('[upload] Error:', error);
     return NextResponse.json(

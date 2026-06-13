@@ -1,0 +1,1841 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useEffect, useCallback, useRef } from 'react';
+     4→import { motion } from 'framer-motion';
+     5→import {
+     6→  User, Lock, Mail, Phone, Heart, FileText, MessageCircle, Clock,
+     7→  Settings, LogOut, Eye, EyeOff, ShieldCheck, ShieldOff, Users, BarChart3,
+     8→  MapPin, ChevronRight, Send, Trash2, CheckCircle, AlertCircle,
+     9→  Loader2, Building, Home, Key, Scale, Plus, Pencil, X, ImagePlus,
+    10→  Maximize, BedDouble, Car, PaintBucket, Sun, Calendar,
+    11→  GraduationCap, TreePine, ShoppingBag, Bus, ChevronLeft,
+    12→  UserPlus, Ban, Upload
+    13→} from 'lucide-react';
+    14→import { Button } from '@/components/ui/button';
+    15→import { Input } from '@/components/ui/input';
+    16→import { Textarea } from '@/components/ui/textarea';
+    17→import { useToast } from '@/hooks/use-toast';
+    18→import { useNavigationStore } from '@/store/navigation';
+    19→
+    20→/* ─── Types ──────────────────────────────────────────────── */
+    21→interface ManagerInfo {
+    22→  id: string;
+    23→  name: string | null;
+    24→  email: string;
+    25→  phone: string | null;
+    26→}
+    27→
+    28→interface PropertyDB {
+    29→  id: number;
+    30→  title: string;
+    31→  price: string;
+    32→  area: string;
+    33→  rooms: string;
+    34→  district: string;
+    35→  type: string;
+    36→  dealType: string;
+    37→  status: string;
+    38→  description: string;
+    39→  images: string[];
+    40→  address: string;
+    41→  floor: string | null;
+    42→  parking: string | null;
+    43→  renovation: string | null;
+    44→  balcony: string | null;
+    45→  year: string | null;
+    46→  schools: string;
+    47→  gardens: string;
+    48→  shops: string;
+    49→  transport: string;
+    50→  parks: string;
+    51→  medicine: string;
+    52→  managerId: string;
+    53→  manager: ManagerInfo;
+    54→  createdAt: string;
+    55→  updatedAt: string;
+    56→}
+    57→
+    58→interface UserData {
+    59→  id: string;
+    60→  email: string;
+    61→  name: string | null;
+    62→  phone: string | null;
+    63→  role: string;
+    64→  avatar: string | null;
+    65→  blocked: boolean;
+    66→  createdAt: string;
+    67→  favorites: { id: string; propertyId: number; createdAt: string }[];
+    68→  applications: {
+    69→    id: string; type: string; status: string; propertyTitle: string | null;
+    70→    message: string | null; phone: string | null; createdAt: string; updatedAt: string;
+    71→  }[];
+    72→  messages: {
+    73→    id: string; fromManager: boolean; text: string; isRead: boolean; createdAt: string;
+    74→  }[];
+    75→  properties: PropertyDB[];
+    76→}
+    77→
+    78→type CabinetView = 'login' | 'register' | 'dashboard';
+    79→type TabId = 'favorites' | 'applications' | 'messages' | 'settings' | 'properties' | 'admin';
+    80→
+    81→/* ─── Status helpers ─────────────────────────────────────── */
+    82→const statusLabel: Record<string, string> = {
+    83→  new: 'Новая',
+    84→  in_progress: 'В работе',
+    85→  completed: 'Завершена',
+    86→  cancelled: 'Отменена',
+    87→};
+    88→const statusColor: Record<string, string> = {
+    89→  new: 'bg-[#D4AF37]/20 text-[#D4AF37]',
+    90→  in_progress: 'bg-blue-500/20 text-blue-400',
+    91→  completed: 'bg-green-500/20 text-green-400',
+    92→  cancelled: 'bg-red-500/20 text-red-400',
+    93→};
+    94→const typeLabel: Record<string, string> = {
+    95→  purchase: 'Покупка',
+    96→  sale: 'Продажа',
+    97→  rent: 'Аренда',
+    98→  consultation: 'Консультация',
+    99→};
+   100→const typeIcon: Record<string, React.ElementType> = {
+   101→  purchase: Home,
+   102→  sale: Building,
+   103→  rent: Key,
+   104→  consultation: Scale,
+   105→};
+   106→
+   107→/* ─── Step form data ─────────────────────────────────────── */
+   108→interface PropertyFormData {
+   109→  title: string;
+   110→  price: string;
+   111→  area: string;
+   112→  rooms: string;
+   113→  district: string;
+   114→  type: string;
+   115→  dealType: string;
+   116→  status: string;
+   117→  description: string;
+   118→  address: string;
+   119→  images: string[];
+   120→  floor: string;
+   121→  parking: string;
+   122→  renovation: string;
+   123→  balcony: string;
+   124→  year: string;
+   125→  schools: string;
+   126→  gardens: string;
+   127→  shops: string;
+   128→  transport: string;
+   129→  parks: string;
+   130→  medicine: string;
+   131→}
+   132→
+   133→const emptyForm: PropertyFormData = {
+   134→  title: '',
+   135→  price: '',
+   136→  area: '',
+   137→  rooms: '',
+   138→  district: '',
+   139→  type: 'Квартира',
+   140→  dealType: 'sale',
+   141→  status: 'Продажа',
+   142→  description: '',
+   143→  address: '',
+   144→  images: [],
+   145→  floor: '',
+   146→  parking: '',
+   147→  renovation: '',
+   148→  balcony: '',
+   149→  year: '',
+   150→  schools: '',
+   151→  gardens: '',
+   152→  shops: '',
+   153→  transport: '',
+   154→  parks: '',
+   155→  medicine: '',
+   156→};
+   157→
+   158→const STEPS = [
+   159→  { id: 1, label: 'Основная информация', icon: Home },
+   160→  { id: 2, label: 'Характеристики', icon: Building },
+   161→  { id: 3, label: 'Описание', icon: FileText },
+   162→  { id: 4, label: 'Инфраструктура', icon: MapPin },
+   163→];
+   164→
+   165→/* ═══════════════════════════════════════════════════════════
+   166→   MAIN COMPONENT
+   167→   ═══════════════════════════════════════════════════════════ */
+   168→export default function CabinetPage() {
+   169→  const [view, setView] = useState<CabinetView>('login');
+   170→  const [showPassword, setShowPassword] = useState(false);
+   171→  const [activeTab, setActiveTab] = useState<TabId>('favorites');
+   172→  const [user, setUser] = useState<UserData | null>(null);
+   173→  const [isLoading, setIsLoading] = useState(false);
+   174→  const [loginError, setLoginError] = useState('');
+   175→  const [registerError, setRegisterError] = useState('');
+   176→  const { toast } = useToast();
+   177→  const { navigate } = useNavigationStore();
+   178→
+   179→  // Form fields
+   180→  const [loginEmail, setLoginEmail] = useState('');
+   181→  const [loginPassword, setLoginPassword] = useState('');
+   182→  const [regName, setRegName] = useState('');
+   183→  const [regEmail, setRegEmail] = useState('');
+   184→  const [regPhone, setRegPhone] = useState('');
+   185→  const [regPassword, setRegPassword] = useState('');
+   186→
+   187→  // Settings fields
+   188→  const [settingsName, setSettingsName] = useState('');
+   189→  const [settingsPhone, setSettingsPhone] = useState('');
+   190→  const [settingsEmail, setSettingsEmail] = useState('');
+   191→
+   192→  // Message input
+   193→  const [messageText, setMessageText] = useState('');
+   194→
+   195→  // Admin data
+   196→  const [adminData, setAdminData] = useState<{
+   197→    users: any[];
+   198→    applications: any[];
+   199→    messages: any[];
+   200→    properties: PropertyDB[];
+   201→  } | null>(null);
+   202→
+   203→  // Property form
+   204→  const [showPropertyForm, setShowPropertyForm] = useState(false);
+   205→  const [formStep, setFormStep] = useState(1);
+   206→  const [formData, setFormData] = useState<PropertyFormData>(emptyForm);
+   207→  const [newImageUrl, setNewImageUrl] = useState('');
+   208→  const [uploadingImage, setUploadingImage] = useState(false);
+   209→  const fileInputRef = useRef<HTMLInputElement>(null);
+   210→  const [editingProperty, setEditingProperty] = useState<PropertyDB | null>(null);
+   211→
+   212→  // All properties (for catalog integration)
+   213→  const [allProperties, setAllProperties] = useState<PropertyDB[]>([]);
+   214→
+   215→  // User management
+   216→  const [showUserForm, setShowUserForm] = useState(false);
+   217→  const [editingUser, setEditingUser] = useState<any | null>(null);
+   218→  const [userFormData, setUserFormData] = useState({
+   219→    name: '',
+   220→    email: '',
+   221→    phone: '',
+   222→    password: '',
+   223→    role: 'client',
+   224→  });
+   225→
+   226→  /* ─── Check session on mount ────────────────────────── */
+   227→  const fetchUser = useCallback(async () => {
+   228→    try {
+   229→      const res = await fetch('/api/auth/me');
+   230→      if (res.ok) {
+   231→        const data = await res.json();
+   232→        setUser(data.user);
+   233→        setSettingsName(data.user.name || '');
+   234→        setSettingsPhone(data.user.phone || '');
+   235→        setSettingsEmail(data.user.email || '');
+   236→        setView('dashboard');
+   237→        // Set default tab based on role
+   238→        if (data.user.role === 'manager') {
+   239→          setActiveTab('properties');
+   240→        } else if (data.user.role === 'admin') {
+   241→          setActiveTab('admin');
+   242→        }
+   243→      }
+   244→    } catch {}
+   245→  }, []);
+   246→
+   247→  useEffect(() => { fetchUser(); }, [fetchUser]);
+   248→
+   249→  /* ─── Fetch all properties for admin ──────────────────── */
+   250→  const fetchAllProperties = useCallback(async () => {
+   251→    try {
+   252→      const res = await fetch('/api/properties');
+   253→      if (res.ok) {
+   254→        const data = await res.json();
+   255→        setAllProperties(data.properties);
+   256→      }
+   257→    } catch {}
+   258→  }, []);
+   259→
+   260→  useEffect(() => {
+   261→    if (user?.role === 'admin' && activeTab === 'properties') {
+   262→      fetchAllProperties();
+   263→    }
+   264→  }, [user?.role, activeTab, fetchAllProperties]);
+   265→
+   266→  /* ─── Login ─────────────────────────────────────────── */
+   267→  const handleLogin = async (e: React.FormEvent) => {
+   268→    e.preventDefault();
+   269→    setLoginError('');
+   270→    setIsLoading(true);
+   271→    try {
+   272→      const res = await fetch('/api/auth/login', {
+   273→        method: 'POST',
+   274→        headers: { 'Content-Type': 'application/json' },
+   275→        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+   276→      });
+   277→      const data = await res.json();
+   278→      if (!res.ok) {
+   279→        setLoginError(data.error || 'Ошибка входа');
+   280→        return;
+   281→      }
+   282→      setUser(data.user);
+   283→      setSettingsName(data.user.name || '');
+   284→      setSettingsPhone(data.user.phone || '');
+   285→      setSettingsEmail(data.user.email || '');
+   286→      setView('dashboard');
+   287→      if (data.user.role === 'manager') setActiveTab('properties');
+   288→      else if (data.user.role === 'admin') setActiveTab('admin');
+   289→      toast({ title: 'Добро пожаловать!', description: `Вы вошли как ${data.user.name || data.user.email}` });
+   290→    } catch {
+   291→      setLoginError('Ошибка соединения');
+   292→    } finally {
+   293→      setIsLoading(false);
+   294→    }
+   295→  };
+   296→
+   297→  /* ─── Register ──────────────────────────────────────── */
+   298→  const handleRegister = async (e: React.FormEvent) => {
+   299→    e.preventDefault();
+   300→    setRegisterError('');
+   301→    setIsLoading(true);
+   302→    try {
+   303→      const res = await fetch('/api/auth/register', {
+   304→        method: 'POST',
+   305→        headers: { 'Content-Type': 'application/json' },
+   306→        body: JSON.stringify({ name: regName, email: regEmail, phone: regPhone, password: regPassword }),
+   307→      });
+   308→      const data = await res.json();
+   309→      if (!res.ok) {
+   310→        setRegisterError(data.error || 'Ошибка регистрации');
+   311→        return;
+   312→      }
+   313→      setUser(data.user);
+   314→      setSettingsName(data.user.name || '');
+   315→      setSettingsPhone(data.user.phone || '');
+   316→      setSettingsEmail(data.user.email || '');
+   317→      setView('dashboard');
+   318→      toast({ title: 'Регистрация успешна!', description: 'Добро пожаловать в Актив Плюс' });
+   319→    } catch {
+   320→      setRegisterError('Ошибка соединения');
+   321→    } finally {
+   322→      setIsLoading(false);
+   323→    }
+   324→  };
+   325→
+   326→  /* ─── Logout ────────────────────────────────────────── */
+   327→  const handleLogout = async () => {
+   328→    await fetch('/api/auth/logout', { method: 'POST' });
+   329→    setUser(null);
+   330→    setView('login');
+   331→    setLoginEmail('');
+   332→    setLoginPassword('');
+   333→    toast({ title: 'Вы вышли из системы' });
+   334→  };
+   335→
+   336→  /* ─── Save settings ─────────────────────────────────── */
+   337→  const handleSaveSettings = async () => {
+   338→    setIsLoading(true);
+   339→    try {
+   340→      const res = await fetch('/api/auth/profile', {
+   341→        method: 'PATCH',
+   342→        headers: { 'Content-Type': 'application/json' },
+   343→        body: JSON.stringify({ name: settingsName, phone: settingsPhone, email: settingsEmail }),
+   344→      });
+   345→      const data = await res.json();
+   346→      if (res.ok) {
+   347→        setUser(prev => prev ? { ...prev, ...data.user } : null);
+   348→        toast({ title: 'Профиль обновлён' });
+   349→      } else {
+   350→        toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+   351→      }
+   352→    } catch {
+   353→      toast({ title: 'Ошибка соединения', variant: 'destructive' });
+   354→    } finally {
+   355→      setIsLoading(false);
+   356→    }
+   357→  };
+   358→
+   359→  /* ─── Toggle favorite ───────────────────────────────── */
+   360→  const toggleFavorite = async (propertyId: number) => {
+   361→    try {
+   362→      const res = await fetch('/api/favorites', {
+   363→        method: 'POST',
+   364→        headers: { 'Content-Type': 'application/json' },
+   365→        body: JSON.stringify({ propertyId }),
+   366→      });
+   367→      if (res.ok) {
+   368→        const data = await res.json();
+   369→        setUser(prev => {
+   370→          if (!prev) return prev;
+   371→          if (data.isFavorite) {
+   372→            return { ...prev, favorites: [{ id: 'new', propertyId, createdAt: new Date().toISOString() }, ...prev.favorites] };
+   373→          }
+   374→          return { ...prev, favorites: prev.favorites.filter(f => f.propertyId !== propertyId) };
+   375→        });
+   376→      }
+   377→    } catch {}
+   378→  };
+   379→
+   380→  /* ─── Send message ──────────────────────────────────── */
+   381→  const handleSendMessage = async () => {
+   382→    if (!messageText.trim()) return;
+   383→    try {
+   384→      const res = await fetch('/api/messages', {
+   385→        method: 'POST',
+   386→        headers: { 'Content-Type': 'application/json' },
+   387→        body: JSON.stringify({ text: messageText }),
+   388→      });
+   389→      if (res.ok) {
+   390→        const data = await res.json();
+   391→        setUser(prev => prev ? { ...prev, messages: [data.message, ...prev.messages] } : null);
+   392→        setMessageText('');
+   393→        toast({ title: 'Сообщение отправлено' });
+   394→      }
+   395→    } catch {}
+   396→  };
+   397→
+   398→  /* ─── Fetch admin data ──────────────────────────────── */
+   399→  useEffect(() => {
+   400→    if (user?.role === 'admin' && activeTab === 'admin') {
+   401→      fetch('/api/admin').then(r => r.json()).then(data => {
+   402→        if (data.users) setAdminData(data);
+   403→      }).catch(() => {});
+   404→    }
+   405→  }, [user?.role, activeTab]);
+   406→
+   407→  /* ─── Property form helpers ──────────────────────────── */
+   408→  const updateForm = (field: keyof PropertyFormData, value: string) => {
+   409→    setFormData(prev => ({ ...prev, [field]: value }));
+   410→  };
+   411→
+   412→  const addImage = () => {
+   413→    if (newImageUrl.trim()) {
+   414→      setFormData(prev => ({ ...prev, images: [...prev.images, newImageUrl.trim()] }));
+   415→      setNewImageUrl('');
+   416→    }
+   417→  };
+   418→
+   419→  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+   420→    const files = e.target.files;
+   421→    if (!files || files.length === 0) return;
+   422→
+   423→    setUploadingImage(true);
+   424→    try {
+   425→      for (const file of Array.from(files)) {
+   426→        // Validate file type
+   427→        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+   428→        if (!allowedTypes.includes(file.type)) {
+   429→          toast({ title: 'Ошибка', description: `Файл "${file.name}" — недопустимый формат. Допускаются JPEG, PNG, WebP`, variant: 'destructive' });
+   430→          continue;
+   431→        }
+   432→        // Validate file size (10MB)
+   433→        if (file.size > 10 * 1024 * 1024) {
+   434→          toast({ title: 'Ошибка', description: `Файл "${file.name}" слишком большой (макс. 10 МБ)`, variant: 'destructive' });
+   435→          continue;
+   436→        }
+   437→
+   438→        const uploadForm = new FormData();
+   439→        uploadForm.append('file', file);
+   440→
+   441→        const res = await fetch('/api/upload', {
+   442→          method: 'POST',
+   443→          body: uploadForm,
+   444→        });
+   445→
+   446→        if (res.ok) {
+   447→          const data = await res.json();
+   448→          setFormData(prev => ({ ...prev, images: [...prev.images, data.url] }));
+   449→          toast({ title: 'Фото загружено', description: file.name });
+   450→        } else {
+   451→          const data = await res.json();
+   452→          toast({ title: 'Ошибка загрузки', description: data.error || 'Не удалось загрузить файл', variant: 'destructive' });
+   453→        }
+   454→      }
+   455→    } catch {
+   456→      toast({ title: 'Ошибка соединения', description: 'Не удалось загрузить фото', variant: 'destructive' });
+   457→    } finally {
+   458→      setUploadingImage(false);
+   459→      // Reset file input so the same file can be re-selected
+   460→      if (fileInputRef.current) fileInputRef.current.value = '';
+   461→    }
+   462→  };
+   463→
+   464→  const removeImage = (index: number) => {
+   465→    setFormData(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
+   466→  };
+   467→
+   468→  const resetForm = () => {
+   469→    setFormData(emptyForm);
+   470→    setFormStep(1);
+   471→    setEditingProperty(null);
+   472→    setNewImageUrl('');
+   473→    setUploadingImage(false);
+   474→    setShowPropertyForm(false);
+   475→  };
+   476→
+   477→  const startEditProperty = (prop: PropertyDB) => {
+   478→    setEditingProperty(prop);
+   479→    setShowPropertyForm(true);
+   480→    setFormData({
+   481→      title: prop.title,
+   482→      price: prop.price,
+   483→      area: prop.area,
+   484→      rooms: prop.rooms,
+   485→      district: prop.district,
+   486→      type: prop.type,
+   487→      dealType: prop.dealType,
+   488→      status: prop.status,
+   489→      description: prop.description,
+   490→      address: prop.address,
+   491→      images: prop.images,
+   492→      floor: prop.floor || '',
+   493→      parking: prop.parking || '',
+   494→      renovation: prop.renovation || '',
+   495→      balcony: prop.balcony || '',
+   496→      year: prop.year || '',
+   497→      schools: prop.schools,
+   498→      gardens: prop.gardens,
+   499→      shops: prop.shops,
+   500→      transport: prop.transport,
+   501→      parks: prop.parks,
+   502→      medicine: prop.medicine,
+   503→    });
+   504→    setFormStep(1);
+   505→  };
+   506→
+   507→  const handleSaveProperty = async () => {
+   508→    setIsLoading(true);
+   509→    try {
+   510→      if (editingProperty) {
+   511→        // Update
+   512→        const res = await fetch(`/api/properties/${editingProperty.id}`, {
+   513→          method: 'PATCH',
+   514→          headers: { 'Content-Type': 'application/json' },
+   515→          body: JSON.stringify(formData),
+   516→        });
+   517→        if (res.ok) {
+   518→          const data = await res.json();
+   519→          // Update in local state
+   520→          setUser(prev => {
+   521→            if (!prev) return prev;
+   522→            return {
+   523→              ...prev,
+   524→              properties: prev.properties.map(p => p.id === editingProperty.id ? data.property : p),
+   525→            };
+   526→          });
+   527→          toast({ title: 'Объект обновлён' });
+   528→          resetForm();
+   529→        } else {
+   530→          const data = await res.json();
+   531→          toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+   532→        }
+   533→      } else {
+   534→        // Create
+   535→        const res = await fetch('/api/properties', {
+   536→          method: 'POST',
+   537→          headers: { 'Content-Type': 'application/json' },
+   538→          body: JSON.stringify(formData),
+   539→        });
+   540→        if (res.ok) {
+   541→          const data = await res.json();
+   542→          setUser(prev => prev ? { ...prev, properties: [data.property, ...prev.properties] } : null);
+   543→          toast({ title: 'Объект добавлен!', description: 'Карточка появится в каталоге с вашим именем' });
+   544→          resetForm();
+   545→        } else {
+   546→          const data = await res.json();
+   547→          toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+   548→        }
+   549→      }
+   550→    } catch {
+   551→      toast({ title: 'Ошибка соединения', variant: 'destructive' });
+   552→    } finally {
+   553→      setIsLoading(false);
+   554→    }
+   555→  };
+   556→
+   557→  const handleDeleteProperty = async (id: number) => {
+   558→    if (!confirm('Удалить объект?')) return;
+   559→    try {
+   560→      const res = await fetch(`/api/properties/${id}`, { method: 'DELETE' });
+   561→      if (res.ok) {
+   562→        setUser(prev => prev ? { ...prev, properties: prev.properties.filter(p => p.id !== id) } : null);
+   563→        setAllProperties(prev => prev.filter(p => p.id !== id));
+   564→        toast({ title: 'Объект удалён' });
+   565→      }
+   566→    } catch {}
+   567→  };
+   568→
+   569→  /* ─── User management handlers ─────────────────────── */
+   570→  const resetUserForm = () => {
+   571→    setShowUserForm(false);
+   572→    setEditingUser(null);
+   573→    setUserFormData({ name: '', email: '', phone: '', password: '', role: 'client' });
+   574→  };
+   575→
+   576→  const startEditUser = (u: any) => {
+   577→    setEditingUser(u);
+   578→    setUserFormData({
+   579→      name: u.name || '',
+   580→      email: u.email || '',
+   581→      phone: u.phone || '',
+   582→      password: '',
+   583→      role: u.role || 'client',
+   584→    });
+   585→    setShowUserForm(true);
+   586→  };
+   587→
+   588→  const handleSaveUser = async () => {
+   589→    setIsLoading(true);
+   590→    try {
+   591→      if (editingUser) {
+   592→        const body: any = {
+   593→          name: userFormData.name,
+   594→          email: userFormData.email,
+   595→          phone: userFormData.phone,
+   596→          role: userFormData.role,
+   597→        };
+   598→        if (userFormData.password) body.password = userFormData.password;
+   599→        const res = await fetch(`/api/users/${editingUser.id}`, {
+   600→          method: 'PATCH',
+   601→          headers: { 'Content-Type': 'application/json' },
+   602→          body: JSON.stringify(body),
+   603→        });
+   604→        if (res.ok) {
+   605→          toast({ title: 'Пользователь обновлён' });
+   606→          resetUserForm();
+   607→          refreshAdminData();
+   608→        } else {
+   609→          const data = await res.json();
+   610→          toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+   611→        }
+   612→      } else {
+   613→        const res = await fetch('/api/users', {
+   614→          method: 'POST',
+   615→          headers: { 'Content-Type': 'application/json' },
+   616→          body: JSON.stringify(userFormData),
+   617→        });
+   618→        if (res.ok) {
+   619→          toast({ title: 'Пользователь создан' });
+   620→          resetUserForm();
+   621→          refreshAdminData();
+   622→        } else {
+   623→          const data = await res.json();
+   624→          toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+   625→        }
+   626→      }
+   627→    } catch {
+   628→      toast({ title: 'Ошибка соединения', variant: 'destructive' });
+   629→    } finally {
+   630→      setIsLoading(false);
+   631→    }
+   632→  };
+   633→
+   634→  const handleDeleteUser = async (id: string) => {
+   635→    if (!confirm('Удалить пользователя? Это действие необратимо.')) return;
+   636→    try {
+   637→      const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+   638→      if (res.ok) {
+   639→        toast({ title: 'Пользователь удалён' });
+   640→        refreshAdminData();
+   641→      } else {
+   642→        const data = await res.json();
+   643→        toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+   644→      }
+   645→    } catch {
+   646→      toast({ title: 'Ошибка соединения', variant: 'destructive' });
+   647→    }
+   648→  };
+   649→
+   650→  const handleToggleBlock = async (u: any) => {
+   651→    const action = u.blocked ? 'разблокировать' : 'заблокировать';
+   652→    if (!confirm(`Вы уверены, что хотите ${action} пользователя ${u.name || u.email}?`)) return;
+   653→    try {
+   654→      const res = await fetch(`/api/users/${u.id}`, {
+   655→        method: 'PATCH',
+   656→        headers: { 'Content-Type': 'application/json' },
+   657→        body: JSON.stringify({ blocked: !u.blocked }),
+   658→      });
+   659→      if (res.ok) {
+   660→        toast({ title: u.blocked ? 'Пользователь разблокирован' : 'Пользователь заблокирован' });
+   661→        refreshAdminData();
+   662→      } else {
+   663→        const data = await res.json();
+   664→        toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+   665→      }
+   666→    } catch {
+   667→      toast({ title: 'Ошибка соединения', variant: 'destructive' });
+   668→    }
+   669→  };
+   670→
+   671→  const handleRoleChange = async (userId: string, newRole: string) => {
+   672→    try {
+   673→      const res = await fetch(`/api/users/${userId}`, {
+   674→        method: 'PATCH',
+   675→        headers: { 'Content-Type': 'application/json' },
+   676→        body: JSON.stringify({ role: newRole }),
+   677→      });
+   678→      if (res.ok) {
+   679→        toast({ title: 'Роль обновлена' });
+   680→        refreshAdminData();
+   681→      } else {
+   682→        const data = await res.json();
+   683→        toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+   684→      }
+   685→    } catch {
+   686→      toast({ title: 'Ошибка соединения', variant: 'destructive' });
+   687→    }
+   688→  };
+   689→
+   690→  const refreshAdminData = useCallback(() => {
+   691→    fetch('/api/admin').then(r => r.json()).then(data => {
+   692→      if (data.users) setAdminData(data);
+   693→    }).catch(() => {});
+   694→  }, []);
+   695→
+   696→  /* ─── Tabs config ───────────────────────────────────── */
+   697→  const clientTabs: { id: TabId; label: string; icon: React.ElementType }[] = React.useMemo(() => {
+   698→    const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [];
+   699→    if (user?.role === 'manager') {
+   700→      tabs.push({ id: 'properties', label: 'Мои объекты', icon: Building });
+   701→    }
+   702→    if (user?.role === 'admin') {
+   703→      tabs.push({ id: 'properties', label: 'Все объекты', icon: Building });
+   704→    }
+   705→    tabs.push(
+   706→      { id: 'favorites', label: 'Избранное', icon: Heart },
+   707→      { id: 'applications', label: 'Мои заявки', icon: FileText },
+   708→      { id: 'messages', label: 'Сообщения', icon: MessageCircle },
+   709→      { id: 'settings', label: 'Настройки', icon: Settings },
+   710→    );
+   711→    if (user?.role === 'admin') {
+   712→      tabs.push({ id: 'admin', label: 'Управление', icon: ShieldCheck });
+   713→    }
+   714→    return tabs;
+   715→  }, [user?.role]);
+   716→
+   717→  /* ═══════════════════════════════════════════════════════
+   718→     LOGIN VIEW
+   719→     ═══════════════════════════════════════════════════════ */
+   720→  if (view === 'login') {
+   721→    return (
+   722→      <div className="pt-28 min-h-screen bg-[#0B0B0B] flex items-center justify-center px-4">
+   723→        <motion.div className="w-full max-w-md" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+   724→          <div className="bg-[#141414] rounded-2xl border border-white/5 p-8">
+   725→            <div className="text-center mb-8">
+   726→              <div className="w-16 h-16 rounded-full bg-[#D4AF37]/20 flex items-center justify-center mx-auto mb-4">
+   727→                <User className="w-8 h-8 text-[#D4AF37]" />
+   728→              </div>
+   729→              <h1 className="text-2xl font-bold text-white">Вход в личный кабинет</h1>
+   730→              <p className="text-white/50 mt-2">Введите данные для входа</p>
+   731→            </div>
+   732→            {loginError && (
+   733→              <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-red-400 text-sm">
+   734→                <AlertCircle className="w-4 h-4 shrink-0" /> {loginError}
+   735→              </div>
+   736→            )}
+   737→            <form onSubmit={handleLogin} className="space-y-4">
+   738→              <div className="relative">
+   739→                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
+   740→                <Input
+   741→                  placeholder="Email"
+   742→                  type="email"
+   743→                  value={loginEmail}
+   744→                  onChange={e => setLoginEmail(e.target.value)}
+   745→                  className="pl-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] h-12 text-white placeholder:text-white/30"
+   746→                  required
+   747→                />
+   748→              </div>
+   749→              <div className="relative">
+   750→                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
+   751→                <Input
+   752→                  placeholder="Пароль"
+   753→                  type={showPassword ? 'text' : 'password'}
+   754→                  value={loginPassword}
+   755→                  onChange={e => setLoginPassword(e.target.value)}
+   756→                  className="pl-11 pr-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] h-12 text-white placeholder:text-white/30"
+   757→                  required
+   758→                />
+   759→                <button type="button" onClick={() => setShowPassword(!showPassword)}
+   760→                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white">
+   761→                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+   762→                </button>
+   763→              </div>
+   764→              <Button type="submit" disabled={isLoading}
+   765→                className="w-full bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold h-12">
+   766→                {isLoading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Войти'}
+   767→              </Button>
+   768→            </form>
+   769→            <div className="mt-6 text-center">
+   770→              <button onClick={() => { setView('register'); setLoginError(''); }}
+   771→                className="text-[#D4AF37] text-sm hover:text-[#F1D28A]">
+   772→                Зарегистрироваться
+   773→              </button>
+   774→            </div>
+   775→          </div>
+   776→        </motion.div>
+   777→      </div>
+   778→    );
+   779→  }
+   780→
+   781→  /* ═══════════════════════════════════════════════════════
+   782→     REGISTER VIEW
+   783→     ═══════════════════════════════════════════════════════ */
+   784→  if (view === 'register') {
+   785→    return (
+   786→      <div className="pt-28 min-h-screen bg-[#0B0B0B] flex items-center justify-center px-4">
+   787→        <motion.div className="w-full max-w-md" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+   788→          <div className="bg-[#141414] rounded-2xl border border-white/5 p-8">
+   789→            <div className="text-center mb-8">
+   790→              <h1 className="text-2xl font-bold text-white">Регистрация</h1>
+   791→              <p className="text-white/50 mt-2">Создайте личный кабинет</p>
+   792→            </div>
+   793→            {registerError && (
+   794→              <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-red-400 text-sm">
+   795→                <AlertCircle className="w-4 h-4 shrink-0" /> {registerError}
+   796→              </div>
+   797→            )}
+   798→            <form onSubmit={handleRegister} className="space-y-4">
+   799→              <div className="relative">
+   800→                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
+   801→                <Input placeholder="Имя" value={regName} onChange={e => setRegName(e.target.value)}
+   802→                  className="pl-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] h-12 text-white placeholder:text-white/30" required />
+   803→              </div>
+   804→              <div className="relative">
+   805→                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
+   806→                <Input placeholder="Email" type="email" value={regEmail} onChange={e => setRegEmail(e.target.value)}
+   807→                  className="pl-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] h-12 text-white placeholder:text-white/30" required />
+   808→              </div>
+   809→              <div className="relative">
+   810→                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
+   811→                <Input placeholder="Телефон" type="tel" value={regPhone} onChange={e => setRegPhone(e.target.value)}
+   812→                  className="pl-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] h-12 text-white placeholder:text-white/30" required />
+   813→              </div>
+   814→              <div className="relative">
+   815→                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
+   816→                <Input placeholder="Пароль (мин. 6 символов)" type="password" value={regPassword}
+   817→                  onChange={e => setRegPassword(e.target.value)}
+   818→                  className="pl-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] h-12 text-white placeholder:text-white/30" required />
+   819→              </div>
+   820→              <Button type="submit" disabled={isLoading}
+   821→                className="w-full bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold h-12">
+   822→                {isLoading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Зарегистрироваться'}
+   823→              </Button>
+   824→            </form>
+   825→            <div className="mt-6 text-center">
+   826→              <button onClick={() => { setView('login'); setRegisterError(''); }}
+   827→                className="text-[#D4AF37] text-sm hover:text-[#F1D28A]">
+   828→                Уже есть аккаунт? Войти
+   829→              </button>
+   830→            </div>
+   831→          </div>
+   832→        </motion.div>
+   833→      </div>
+   834→    );
+   835→  }
+   836→
+   837→  /* ═══════════════════════════════════════════════════════
+   838→     DASHBOARD VIEW
+   839→     ═══════════════════════════════════════════════════════ */
+   840→  if (!user) return null;
+   841→
+   842→  const roleLabel = user.role === 'admin' ? 'Администратор' : user.role === 'manager' ? 'Менеджер' : 'Клиент';
+   843→  const roleBadgeColor = user.role === 'admin' ? 'bg-red-500/20 text-red-400' : user.role === 'manager' ? 'bg-blue-500/20 text-blue-400' : 'bg-[#D4AF37]/20 text-[#D4AF37]';
+   844→
+   845→  const displayProperties = user.role === 'admin' ? allProperties : (user.properties || []);
+   846→
+   847→  return (
+   848→    <div className="pt-28 min-h-screen bg-[#0B0B0B]">
+   849→      <div className="max-w-7xl mx-auto px-4 py-8">
+   850→        {/* Header */}
+   851→        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+   852→          <div className="flex items-center gap-4">
+   853→            <div className="w-14 h-14 rounded-full bg-[#D4AF37]/20 border-2 border-[#D4AF37] flex items-center justify-center shrink-0">
+   854→              <span className="text-[#D4AF37] font-bold text-lg">
+   855→                {(user.name || user.email)[0].toUpperCase()}
+   856→              </span>
+   857→            </div>
+   858→            <div className="min-w-0">
+   859→              <h1 className="text-2xl md:text-3xl font-bold text-white truncate">
+   860→                {user.name || 'Пользователь'}
+   861→              </h1>
+   862→              <div className="flex items-center gap-2 mt-1 flex-wrap">
+   863→                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${roleBadgeColor}`}>
+   864→                  {roleLabel}
+   865→                </span>
+   866→                <span className="text-white/40 text-sm truncate">{user.email}</span>
+   867→              </div>
+   868→            </div>
+   869→          </div>
+   870→          <Button variant="outline"
+   871→            className="border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black shrink-0"
+   872→            onClick={handleLogout}>
+   873→            <LogOut className="w-4 h-4 mr-2" /> Выйти
+   874→          </Button>
+   875→        </div>
+   876→
+   877→        <div className="grid lg:grid-cols-4 gap-6">
+   878→          {/* ── Sidebar ── */}
+   879→          <div className="bg-[#141414] rounded-2xl border border-white/5 p-4 h-fit lg:sticky lg:top-32">
+   880→            <nav className="space-y-1">
+   881→              {clientTabs.map((tab) => (
+   882→                <button
+   883→                  key={tab.id}
+   884→                  onClick={() => setActiveTab(tab.id)}
+   885→                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${
+   886→                    activeTab === tab.id
+   887→                      ? 'bg-[#D4AF37]/10 text-[#D4AF37]'
+   888→                      : 'text-white/60 hover:text-white hover:bg-white/5'
+   889→                  }`}
+   890→                >
+   891→                  <tab.icon className="w-5 h-5" />
+   892→                  {tab.label}
+   893→                  {tab.id === 'favorites' && user.favorites.length > 0 && (
+   894→                    <span className="ml-auto text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-1.5 py-0.5 rounded-full">
+   895→                      {user.favorites.length}
+   896→                    </span>
+   897→                  )}
+   898→                  {tab.id === 'applications' && user.applications.length > 0 && (
+   899→                    <span className="ml-auto text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-1.5 py-0.5 rounded-full">
+   900→                      {user.applications.length}
+   901→                    </span>
+   902→                  )}
+   903→                  {tab.id === 'properties' && displayProperties.length > 0 && (
+   904→                    <span className="ml-auto text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-1.5 py-0.5 rounded-full">
+   905→                      {displayProperties.length}
+   906→                    </span>
+   907→                  )}
+   908→                </button>
+   909→              ))}
+   910→            </nav>
+   911→          </div>
+   912→
+   913→          {/* ── Content ── */}
+   914→          <div className="lg:col-span-3">
+   915→            <div
+   916→              key={activeTab}
+   917→              className="bg-[#141414] rounded-2xl border border-white/5 p-6 md:p-8"
+   918→            >
+   919→              {/* ═══════════════════════════════════════
+   920→                  PROPERTIES TAB (Manager & Admin)
+   921→                 ═══════════════════════════════════════ */}
+   922→              {activeTab === 'properties' && (user.role === 'manager' || user.role === 'admin') && (
+   923→                <div>
+   924→                  <div className="flex items-center justify-between mb-6">
+   925→                    <h2 className="text-xl font-semibold text-white">
+   926→                      {user.role === 'admin' ? 'Все объекты' : 'Мои объекты'}
+   927→                    </h2>
+   928→                    {(user.role === 'manager' || user.role === 'admin') && (
+   929→                      <Button
+   930→                        onClick={() => {
+   931→                          setFormData(emptyForm);
+   932→                          setEditingProperty(null);
+   933→                          setFormStep(1);
+   934→                          setNewImageUrl('');
+   935→                          setShowPropertyForm(true);
+   936→                        }}
+   937→                        className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
+   938→                        disabled={showPropertyForm && !editingProperty}
+   939→                      >
+   940→                        <Plus className="w-4 h-4 mr-2" /> Добавить объект
+   941→                      </Button>
+   942→                    )}
+   943→                  </div>
+   944→
+   945→                  {/* Step-by-step form */}
+   946→                  {showPropertyForm ? (
+   947→                    <div className="mb-8 bg-[#0B0B0B] rounded-2xl border border-[#D4AF37]/20 p-6">
+   948→                      <div className="flex items-center justify-between mb-6">
+   949→                        <h3 className="text-lg font-semibold text-white">
+   950→                          {editingProperty ? 'Редактирование объекта' : 'Добавление объекта'}
+   951→                        </h3>
+   952→                        <button onClick={resetForm} className="text-white/40 hover:text-white">
+   953→                          <X className="w-5 h-5" />
+   954→                        </button>
+   955→                      </div>
+   956→
+   957→                      {/* Steps indicator */}
+   958→                      <div className="flex items-center gap-2 mb-8">
+   959→                        {STEPS.map((step, idx) => (
+   960→                          <React.Fragment key={step.id}>
+   961→                            <button
+   962→                              onClick={() => setFormStep(step.id)}
+   963→                              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+   964→                                formStep === step.id
+   965→                                  ? 'bg-[#D4AF37] text-black'
+   966→                                  : formStep > step.id
+   967→                                  ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
+   968→                                  : 'bg-white/5 text-white/40'
+   969→                              }`}
+   970→                            >
+   971→                              <step.icon className="w-4 h-4" />
+   972→                              <span className="hidden sm:inline">{step.label}</span>
+   973→                              <span className="sm:hidden">{step.id}</span>
+   974→                            </button>
+   975→                            {idx < STEPS.length - 1 && (
+   976→                              <ChevronRight className="w-4 h-4 text-white/20" />
+   977→                            )}
+   978→                          </React.Fragment>
+   979→                        ))}
+   980→                      </div>
+   981→
+   982→                      {/* Step 1: Basic Info */}
+   983→                      {formStep === 1 && (
+   984→                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+   985→                          <div className="grid md:grid-cols-2 gap-4">
+   986→                            <div>
+   987→                              <label className="text-white/50 text-sm mb-1.5 block">Название объекта *</label>
+   988→                              <Input value={formData.title} onChange={e => updateForm('title', e.target.value)}
+   989→                                placeholder="Пентхаус на Набережной"
+   990→                                className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+   991→                            </div>
+   992→                            <div>
+   993→                              <label className="text-white/50 text-sm mb-1.5 block">Цена *</label>
+   994→                              <Input value={formData.price} onChange={e => updateForm('price', e.target.value)}
+   995→                                placeholder="45 000 000 ₽"
+   996→                                className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+   997→                            </div>
+   998→                            <div>
+   999→                              <label className="text-white/50 text-sm mb-1.5 block">Адрес *</label>
+  1000→                              <Input value={formData.address} onChange={e => updateForm('address', e.target.value)}
+  1001→                                placeholder="ул. Набережная, 45"
+  1002→                                className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1003→                            </div>
+  1004→                            <div>
+  1005→                              <label className="text-white/50 text-sm mb-1.5 block">Район *</label>
+  1006→                              <Input value={formData.district} onChange={e => updateForm('district', e.target.value)}
+  1007→                                placeholder="Ворошиловский"
+  1008→                                className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1009→                            </div>
+  1010→                            <div>
+  1011→                              <label className="text-white/50 text-sm mb-1.5 block">Тип недвижимости *</label>
+  1012→                              <select value={formData.type} onChange={e => updateForm('type', e.target.value)}
+  1013→                                className="w-full bg-[#141414] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-[#D4AF37] focus:outline-none">
+  1014→                                <option value="Квартира">Квартира</option>
+  1015→                                <option value="Дом">Дом</option>
+  1016→                                <option value="Таунхаус">Таунхаус</option>
+  1017→                                <option value="Участок">Участок</option>
+  1018→                                <option value="Коммерческая">Коммерческая</option>
+  1019→                              </select>
+  1020→                            </div>
+  1021→                            <div>
+  1022→                              <label className="text-white/50 text-sm mb-1.5 block">Тип сделки</label>
+  1023→                              <select value={formData.dealType} onChange={e => updateForm('dealType', e.target.value)}
+  1024→                                className="w-full bg-[#141414] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-[#D4AF37] focus:outline-none">
+  1025→                                <option value="sale">Продажа</option>
+  1026→                                <option value="rent">Аренда</option>
+  1027→                              </select>
+  1028→                            </div>
+  1029→                          </div>
+  1030→
+  1031→                          {/* Images */}
+  1032→                          <div>
+  1033→                            <label className="text-white/50 text-sm mb-1.5 block">Фотографии объекта</label>
+  1034→                            <input
+  1035→                              ref={fileInputRef}
+  1036→                              type="file"
+  1037→                              accept="image/jpeg,image/png,image/webp"
+  1038→                              multiple
+  1039→                              onChange={handleFileUpload}
+  1040→                              className="hidden"
+  1041→                            />
+  1042→                            <div className="flex gap-2 mb-3">
+  1043→                              <Button
+  1044→                                onClick={() => fileInputRef.current?.click()}
+  1045→                                variant="outline"
+  1046→                                disabled={uploadingImage}
+  1047→                                className="border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black w-full h-12"
+  1048→                              >
+  1049→                                {uploadingImage ? (
+  1050→                                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+  1051→                                ) : (
+  1052→                                  <Upload className="w-5 h-5 mr-2" />
+  1053→                                )}
+  1054→                                {uploadingImage ? 'Загрузка...' : 'Выбрать фото'}
+  1055→                              </Button>
+  1056→                            </div>
+  1057→                            <p className="text-white/30 text-xs mb-3">JPEG, PNG, WebP — до 10 МБ. Можно выбрать несколько файлов.</p>
+  1058→                            {formData.images.length > 0 && (
+  1059→                              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+  1060→                                {formData.images.map((img, i) => (
+  1061→                                  <div key={i} className="relative aspect-[4/3] rounded-lg overflow-hidden group border border-white/10">
+  1062→                                    <img src={img} alt="" className="w-full h-full object-cover" />
+  1063→                                    <button onClick={() => removeImage(i)}
+  1064→                                      className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+  1065→                                      <X className="w-5 h-5 text-white" />
+  1066→                                    </button>
+  1067→                                    <div className="absolute top-1 left-1 bg-black/60 text-white/70 text-[10px] px-1 rounded">
+  1068→                                      {i + 1}
+  1069→                                    </div>
+  1070→                                  </div>
+  1071→                                ))}
+  1072→                                {/* Add more button */}
+  1073→                                <button
+  1074→                                  onClick={() => fileInputRef.current?.click()}
+  1075→                                  disabled={uploadingImage}
+  1076→                                  className="aspect-[4/3] rounded-lg border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-1 text-white/30 hover:text-[#D4AF37] hover:border-[#D4AF37]/30 transition-colors"
+  1077→                                >
+  1078→                                  <Plus className="w-5 h-5" />
+  1079→                                  <span className="text-[10px]">Ещё</span>
+  1080→                                </button>
+  1081→                              </div>
+  1082→                            )}
+  1083→                          </div>
+  1084→                        </motion.div>
+  1085→                      )}
+  1086→
+  1087→                      {/* Step 2: Characteristics */}
+  1088→                      {formStep === 2 && (
+  1089→                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+  1090→                          <div className="grid md:grid-cols-2 gap-4">
+  1091→                            <div>
+  1092→                              <label className="text-white/50 text-sm mb-1.5 block">Площадь *</label>
+  1093→                              <div className="relative">
+  1094→                                <Maximize className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+  1095→                                <Input value={formData.area} onChange={e => updateForm('area', e.target.value)}
+  1096→                                  placeholder="180 м²" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1097→                              </div>
+  1098→                            </div>
+  1099→                            <div>
+  1100→                              <label className="text-white/50 text-sm mb-1.5 block">Комнат *</label>
+  1101→                              <div className="relative">
+  1102→                                <BedDouble className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+  1103→                                <Input value={formData.rooms} onChange={e => updateForm('rooms', e.target.value)}
+  1104→                                  placeholder="4 комнаты" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1105→                              </div>
+  1106→                            </div>
+  1107→                            <div>
+  1108→                              <label className="text-white/50 text-sm mb-1.5 block">Этаж</label>
+  1109→                              <div className="relative">
+  1110→                                <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+  1111→                                <Input value={formData.floor} onChange={e => updateForm('floor', e.target.value)}
+  1112→                                  placeholder="25/25" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1113→                              </div>
+  1114→                            </div>
+  1115→                            <div>
+  1116→                              <label className="text-white/50 text-sm mb-1.5 block">Парковка</label>
+  1117→                              <div className="relative">
+  1118→                                <Car className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+  1119→                                <Input value={formData.parking} onChange={e => updateForm('parking', e.target.value)}
+  1120→                                  placeholder="2 машиноместа" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1121→                              </div>
+  1122→                            </div>
+  1123→                            <div>
+  1124→                              <label className="text-white/50 text-sm mb-1.5 block">Отделка</label>
+  1125→                              <div className="relative">
+  1126→                                <PaintBucket className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+  1127→                                <Input value={formData.renovation} onChange={e => updateForm('renovation', e.target.value)}
+  1128→                                  placeholder="Авторский" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1129→                              </div>
+  1130→                            </div>
+  1131→                            <div>
+  1132→                              <label className="text-white/50 text-sm mb-1.5 block">Балкон</label>
+  1133→                              <div className="relative">
+  1134→                                <Sun className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+  1135→                                <Input value={formData.balcony} onChange={e => updateForm('balcony', e.target.value)}
+  1136→                                  placeholder="3 лоджии" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1137→                              </div>
+  1138→                            </div>
+  1139→                            <div>
+  1140→                              <label className="text-white/50 text-sm mb-1.5 block">Год постройки</label>
+  1141→                              <div className="relative">
+  1142→                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+  1143→                                <Input value={formData.year} onChange={e => updateForm('year', e.target.value)}
+  1144→                                  placeholder="2022" className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1145→                              </div>
+  1146→                            </div>
+  1147→                          </div>
+  1148→                        </motion.div>
+  1149→                      )}
+  1150→
+  1151→                      {/* Step 3: Description */}
+  1152→                      {formStep === 3 && (
+  1153→                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+  1154→                          <div>
+  1155→                            <label className="text-white/50 text-sm mb-1.5 block">Описание объекта *</label>
+  1156→                            <Textarea value={formData.description} onChange={e => updateForm('description', e.target.value)}
+  1157→                              placeholder="Подробное описание объекта недвижимости..."
+  1158→                              className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30 min-h-[200px] resize-y" />
+  1159→                          </div>
+  1160→                        </motion.div>
+  1161→                      )}
+  1162→
+  1163→                      {/* Step 4: Infrastructure */}
+  1164→                      {formStep === 4 && (
+  1165→                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+  1166→                          <div className="grid md:grid-cols-2 gap-4">
+  1167→                            <div>
+  1168→                              <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
+  1169→                                <GraduationCap className="w-4 h-4 text-[#D4AF37]" /> Школы
+  1170→                              </label>
+  1171→                              <Input value={formData.schools} onChange={e => updateForm('schools', e.target.value)}
+  1172→                                placeholder="Школа №5 — 500м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1173→                            </div>
+  1174→                            <div>
+  1175→                              <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
+  1176→                                <TreePine className="w-4 h-4 text-[#D4AF37]" /> Детские сады
+  1177→                              </label>
+  1178→                              <Input value={formData.gardens} onChange={e => updateForm('gardens', e.target.value)}
+  1179→                                placeholder="Детский сад «Солнышко» — 300м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1180→                            </div>
+  1181→                            <div>
+  1182→                              <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
+  1183→                                <ShoppingBag className="w-4 h-4 text-[#D4AF37]" /> Магазины
+  1184→                              </label>
+  1185→                              <Input value={formData.shops} onChange={e => updateForm('shops', e.target.value)}
+  1186→                                placeholder="ТРЦ «Мега» — 800м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1187→                            </div>
+  1188→                            <div>
+  1189→                              <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
+  1190→                                <Bus className="w-4 h-4 text-[#D4AF37]" /> Транспорт
+  1191→                              </label>
+  1192→                              <Input value={formData.transport} onChange={e => updateForm('transport', e.target.value)}
+  1193→                                placeholder="Автобусная остановка — 100м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1194→                            </div>
+  1195→                            <div>
+  1196→                              <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
+  1197→                                <TreePine className="w-4 h-4 text-[#D4AF37]" /> Парки
+  1198→                              </label>
+  1199→                              <Input value={formData.parks} onChange={e => updateForm('parks', e.target.value)}
+  1200→                                placeholder="Парк им. Горького — 600м" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1201→                            </div>
+  1202→                            <div>
+  1203→                              <label className="text-white/50 text-sm mb-1.5 block flex items-center gap-2">
+  1204→                                <Heart className="w-4 h-4 text-[#D4AF37]" /> Медицина
+  1205→                              </label>
+  1206→                              <Input value={formData.medicine} onChange={e => updateForm('medicine', e.target.value)}
+  1207→                                placeholder="Городская больница №1 — 1.2км" className="bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30" />
+  1208→                            </div>
+  1209→                          </div>
+  1210→                        </motion.div>
+  1211→                      )}
+  1212→
+  1213→                      {/* Navigation buttons */}
+  1214→                      <div className="flex items-center justify-between mt-8 pt-6 border-t border-white/5">
+  1215→                        <Button
+  1216→                          variant="outline"
+  1217→                          onClick={() => setFormStep(prev => Math.max(1, prev - 1))}
+  1218→                          disabled={formStep === 1}
+  1219→                          className="border-white/10 text-white/60 hover:text-white hover:bg-white/5"
+  1220→                        >
+  1221→                          <ChevronLeft className="w-4 h-4 mr-1" /> Назад
+  1222→                        </Button>
+  1223→                        {formStep < 4 ? (
+  1224→                          <Button
+  1225→                            onClick={() => setFormStep(prev => Math.min(4, prev + 1))}
+  1226→                            className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
+  1227→                          >
+  1228→                            Далее <ChevronRight className="w-4 h-4 ml-1" />
+  1229→                          </Button>
+  1230→                        ) : (
+  1231→                          <Button
+  1232→                            onClick={handleSaveProperty}
+  1233→                            disabled={isLoading}
+  1234→                            className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
+  1235→                          >
+  1236→                            {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+  1237→                            {editingProperty ? 'Сохранить изменения' : 'Добавить объект'}
+  1238→                          </Button>
+  1239→                        )}
+  1240→                      </div>
+  1241→                    </div>
+  1242→                  ) : null}
+  1243→
+  1244→                  {/* Properties list */}
+  1245→                  {displayProperties.length === 0 && !showPropertyForm ? (
+  1246→                    <div className="text-center py-16">
+  1247→                      <Building className="w-16 h-16 text-white/10 mx-auto mb-4" />
+  1248→                      <p className="text-white/40 text-lg">Нет объектов</p>
+  1249→                      <p className="text-white/30 text-sm mt-2">Добавьте первый объект, нажав кнопку выше</p>
+  1250→                    </div>
+  1251→                  ) : (
+  1252→                    <div className="space-y-3">
+  1253→                      {displayProperties.map(prop => (
+  1254→                        <div key={prop.id}
+  1255→                          className="flex items-start gap-4 p-4 rounded-xl bg-[#0B0B0B] border border-white/5 hover:border-[#D4AF37]/20 transition-all">
+  1256→                          {/* Thumbnail */}
+  1257→                          {prop.images && prop.images.length > 0 ? (
+  1258→                            <div className="w-20 h-16 rounded-lg overflow-hidden shrink-0">
+  1259→                              <img src={prop.images[0]} alt={prop.title} className="w-full h-full object-cover" />
+  1260→                            </div>
+  1261→                          ) : (
+  1262→                            <div className="w-20 h-16 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
+  1263→                              <Building className="w-6 h-6 text-white/20" />
+  1264→                            </div>
+  1265→                          )}
+  1266→                          {/* Info */}
+  1267→                          <div className="flex-1 min-w-0">
+  1268→                            <div className="flex items-start justify-between gap-2">
+  1269→                              <div>
+  1270→                                <h3 className="text-white font-medium text-sm">{prop.title}</h3>
+  1271→                                <p className="text-[#D4AF37] font-bold text-sm mt-0.5">{prop.price}</p>
+  1272→                              </div>
+  1273→                              <div className="flex items-center gap-1 shrink-0">
+  1274→                                <button onClick={() => startEditProperty(prop)}
+  1275→                                  className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-[#D4AF37] transition-colors">
+  1276→                                  <Pencil className="w-4 h-4" />
+  1277→                                </button>
+  1278→                                <button onClick={() => handleDeleteProperty(prop.id)}
+  1279→                                  className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-red-400 transition-colors">
+  1280→                                  <Trash2 className="w-4 h-4" />
+  1281→                                </button>
+  1282→                              </div>
+  1283→                            </div>
+  1284→                            <div className="flex items-center gap-3 text-white/40 text-xs mt-1">
+  1285→                              <span>{prop.district}</span>
+  1286→                              <span>{prop.area}</span>
+  1287→                              <span>{prop.rooms}</span>
+  1288→                              <span>{prop.type}</span>
+  1289→                            </div>
+  1290→                            {user.role === 'admin' && prop.manager && (
+  1291→                              <div className="flex items-center gap-1.5 text-xs mt-1.5">
+  1292→                                <User className="w-3 h-3 text-[#D4AF37]" />
+  1293→                                <span className="text-[#D4AF37]/80">Менеджер: {prop.manager.name || prop.manager.email}</span>
+  1294→                              </div>
+  1295→                            )}
+  1296→                          </div>
+  1297→                        </div>
+  1298→                      ))}
+  1299→                    </div>
+  1300→                  )}
+  1301→                </div>
+  1302→              )}
+  1303→
+  1304→              {/* ── FAVORITES ── */}
+  1305→              {activeTab === 'favorites' && (
+  1306→                <div>
+  1307→                  <h2 className="text-xl font-semibold text-white mb-6">Избранное</h2>
+  1308→                  {user.favorites.length === 0 ? (
+  1309→                    <div className="text-center py-16">
+  1310→                      <Heart className="w-16 h-16 text-white/10 mx-auto mb-4" />
+  1311→                      <p className="text-white/40 text-lg">У вас пока нет избранных объектов</p>
+  1312→                      <p className="text-white/30 text-sm mt-2">Добавляйте объекты в избранное, нажав на иконку сердца</p>
+  1313→                      <Button className="mt-6 bg-[#D4AF37] text-black hover:bg-[#F1D28A]"
+  1314→                        onClick={() => navigate('catalog')}>
+  1315→                        Смотреть каталог
+  1316→                      </Button>
+  1317→                    </div>
+  1318→                  ) : (
+  1319→                    <div className="grid md:grid-cols-2 gap-4">
+  1320→                      {user.favorites.map(fav => (
+  1321→                        <div key={fav.id}
+  1322→                          className="group flex gap-4 p-4 rounded-xl bg-[#0B0B0B] border border-white/5 hover:border-[#D4AF37]/30 transition-all cursor-pointer"
+  1323→                          onClick={() => navigate('catalog')}>
+  1324→                          <div className="w-24 h-20 rounded-lg overflow-hidden shrink-0 bg-white/5 flex items-center justify-center">
+  1325→                            <Building className="w-6 h-6 text-white/20" />
+  1326→                          </div>
+  1327→                          <div className="flex-1 min-w-0">
+  1328→                            <h3 className="text-white font-medium text-sm truncate">Объект #{fav.propertyId}</h3>
+  1329→                            <button onClick={e => { e.stopPropagation(); toggleFavorite(fav.propertyId); }}
+  1330→                              className="text-[#D4AF37] hover:text-red-400 transition-colors mt-1">
+  1331→                              <Trash2 className="w-4 h-4" />
+  1332→                            </button>
+  1333→                          </div>
+  1334→                        </div>
+  1335→                      ))}
+  1336→                    </div>
+  1337→                  )}
+  1338→                </div>
+  1339→              )}
+  1340→
+  1341→              {/* ── APPLICATIONS ── */}
+  1342→              {activeTab === 'applications' && (
+  1343→                <div>
+  1344→                  <h2 className="text-xl font-semibold text-white mb-6">Мои заявки</h2>
+  1345→                  {user.applications.length === 0 ? (
+  1346→                    <div className="text-center py-16">
+  1347→                      <FileText className="w-16 h-16 text-white/10 mx-auto mb-4" />
+  1348→                      <p className="text-white/40 text-lg">У вас пока нет заявок</p>
+  1349→                      <Button className="mt-6 bg-[#D4AF37] text-black hover:bg-[#F1D28A]"
+  1350→                        onClick={() => navigate('services')}>
+  1351→                        Оставить заявку
+  1352→                      </Button>
+  1353→                    </div>
+  1354→                  ) : (
+  1355→                    <div className="space-y-3">
+  1356→                      {user.applications.map(app => {
+  1357→                        const Icon = typeIcon[app.type] || FileText;
+  1358→                        return (
+  1359→                          <div key={app.id}
+  1360→                            className="flex items-start gap-4 p-4 rounded-xl bg-[#0B0B0B] border border-white/5">
+  1361→                            <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center shrink-0">
+  1362→                              <Icon className="w-5 h-5 text-[#D4AF37]" />
+  1363→                            </div>
+  1364→                            <div className="flex-1 min-w-0">
+  1365→                              <div className="flex items-center gap-2 flex-wrap">
+  1366→                                <span className="text-white font-medium text-sm">
+  1367→                                  {typeLabel[app.type] || app.type}
+  1368→                                </span>
+  1369→                                <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor[app.status] || 'bg-white/10 text-white/50'}`}>
+  1370→                                  {statusLabel[app.status] || app.status}
+  1371→                                </span>
+  1372→                              </div>
+  1373→                              {app.propertyTitle && (
+  1374→                                <p className="text-white/60 text-sm mt-1">{app.propertyTitle}</p>
+  1375→                              )}
+  1376→                              {app.message && (
+  1377→                                <p className="text-white/40 text-xs mt-1">{app.message}</p>
+  1378→                              )}
+  1379→                              <p className="text-white/30 text-xs mt-2">
+  1380→                                {new Date(app.createdAt).toLocaleDateString('ru-RU', {
+  1381→                                  day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  1382→                                })}
+  1383→                              </p>
+  1384→                            </div>
+  1385→                          </div>
+  1386→                        );
+  1387→                      })}
+  1388→                    </div>
+  1389→                  )}
+  1390→                </div>
+  1391→              )}
+  1392→
+  1393→              {/* ── MESSAGES ── */}
+  1394→              {activeTab === 'messages' && (
+  1395→                <div>
+  1396→                  <h2 className="text-xl font-semibold text-white mb-6">Сообщения</h2>
+  1397→                  <div className="flex flex-col h-[500px]">
+  1398→                    <div className="flex-1 overflow-y-auto space-y-3 pr-2 mb-4">
+  1399→                      {user.messages.length === 0 ? (
+  1400→                        <div className="text-center py-16">
+  1401→                          <MessageCircle className="w-16 h-16 text-white/10 mx-auto mb-4" />
+  1402→                          <p className="text-white/40 text-lg">Нет сообщений</p>
+  1403→                          <p className="text-white/30 text-sm mt-2">Напишите нам, и мы ответим в ближайшее время</p>
+  1404→                        </div>
+  1405→                      ) : (
+  1406→                        user.messages.map(msg => (
+  1407→                          <div key={msg.id}
+  1408→                            className={`flex ${msg.fromManager ? 'justify-start' : 'justify-end'}`}>
+  1409→                            <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+  1410→                              msg.fromManager
+  1411→                                ? 'bg-[#1E1E1E] text-white/80 rounded-bl-md'
+  1412→                                : 'bg-[#D4AF37] text-black rounded-br-md'
+  1413→                            }`}>
+  1414→                              <p className="text-sm">{msg.text}</p>
+  1415→                              <p className={`text-xs mt-1 ${msg.fromManager ? 'text-white/30' : 'text-black/50'}`}>
+  1416→                                {new Date(msg.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+  1417→                              </p>
+  1418→                            </div>
+  1419→                          </div>
+  1420→                        ))
+  1421→                      )}
+  1422→                    </div>
+  1423→                    <div className="flex gap-2 pt-3 border-t border-white/5">
+  1424→                      <Textarea
+  1425→                        placeholder="Введите сообщение..."
+  1426→                        value={messageText}
+  1427→                        onChange={e => setMessageText(e.target.value)}
+  1428→                        className="bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30 resize-none min-h-[44px] max-h-32"
+  1429→                        rows={1}
+  1430→                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
+  1431→                      />
+  1432→                      <Button onClick={handleSendMessage}
+  1433→                        className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] shrink-0 h-11 w-11 p-0"
+  1434→                        disabled={!messageText.trim()}>
+  1435→                        <Send className="w-4 h-4" />
+  1436→                      </Button>
+  1437→                    </div>
+  1438→                  </div>
+  1439→                </div>
+  1440→              )}
+  1441→
+  1442→              {/* ── SETTINGS ── */}
+  1443→              {activeTab === 'settings' && (
+  1444→                <div>
+  1445→                  <h2 className="text-xl font-semibold text-white mb-6">Настройки профиля</h2>
+  1446→                  <div className="space-y-5 max-w-md">
+  1447→                    <div>
+  1448→                      <label className="text-white/50 text-sm mb-1.5 block">Имя</label>
+  1449→                      <div className="relative">
+  1450→                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
+  1451→                        <Input value={settingsName} onChange={e => setSettingsName(e.target.value)}
+  1452→                          className="pl-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] text-white" />
+  1453→                      </div>
+  1454→                    </div>
+  1455→                    <div>
+  1456→                      <label className="text-white/50 text-sm mb-1.5 block">Email</label>
+  1457→                      <div className="relative">
+  1458→                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
+  1459→                        <Input value={settingsEmail} onChange={e => setSettingsEmail(e.target.value)}
+  1460→                          type="email"
+  1461→                          className="pl-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] text-white" />
+  1462→                      </div>
+  1463→                    </div>
+  1464→                    <div>
+  1465→                      <label className="text-white/50 text-sm mb-1.5 block">Телефон</label>
+  1466→                      <div className="relative">
+  1467→                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37]/50" />
+  1468→                        <Input value={settingsPhone} onChange={e => setSettingsPhone(e.target.value)}
+  1469→                          type="tel"
+  1470→                          className="pl-11 bg-[#0B0B0B] border-white/10 focus:border-[#D4AF37] text-white" />
+  1471→                      </div>
+  1472→                    </div>
+  1473→                    <div>
+  1474→                      <label className="text-white/50 text-sm mb-1.5 block">Роль</label>
+  1475→                      <div className="flex items-center gap-2">
+  1476→                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${roleBadgeColor}`}>
+  1477→                          {roleLabel}
+  1478→                        </span>
+  1479→                        <span className="text-white/30 text-xs">Роль назначается администратором</span>
+  1480→                      </div>
+  1481→                    </div>
+  1482→                    <Button onClick={handleSaveSettings} disabled={isLoading}
+  1483→                      className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold">
+  1484→                      {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+  1485→                      Сохранить изменения
+  1486→                    </Button>
+  1487→                  </div>
+  1488→                </div>
+  1489→              )}
+  1490→
+  1491→              {/* ── ADMIN PANEL ── */}
+  1492→              {activeTab === 'admin' && user.role === 'admin' && (
+  1493→                <div>
+  1494→                  <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+  1495→                    <ShieldCheck className="w-5 h-5 text-[#D4AF37]" /> Панель администратора
+  1496→                  </h2>
+  1497→                  {!adminData ? (
+  1498→                    <div className="text-center py-16">
+  1499→                      <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin mx-auto" />
+  1500→                    </div>
+  1501→                  ) : (
+  1502→                    <div className="space-y-8">
+  1503→                      {/* Stats Cards */}
+  1504→                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+  1505→                        <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
+  1506→                          <Users className="w-6 h-6 text-[#D4AF37] mb-2" />
+  1507→                          <p className="text-2xl font-bold text-white">{adminData.users.length}</p>
+  1508→                          <p className="text-white/50 text-sm">Пользователей</p>
+  1509→                        </motion.div>
+  1510→                        <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
+  1511→                          <FileText className="w-6 h-6 text-[#D4AF37] mb-2" />
+  1512→                          <p className="text-2xl font-bold text-white">{adminData.applications.length}</p>
+  1513→                          <p className="text-white/50 text-sm">Заявок</p>
+  1514→                        </motion.div>
+  1515→                        <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
+  1516→                          <MessageCircle className="w-6 h-6 text-[#D4AF37] mb-2" />
+  1517→                          <p className="text-2xl font-bold text-white">{adminData.messages.length}</p>
+  1518→                          <p className="text-white/50 text-sm">Сообщений</p>
+  1519→                        </motion.div>
+  1520→                        <motion.div whileHover={{ scale: 1.02 }} className="bg-[#0B0B0B] rounded-xl p-5 border border-white/5">
+  1521→                          <Building className="w-6 h-6 text-[#D4AF37] mb-2" />
+  1522→                          <p className="text-2xl font-bold text-white">{adminData.properties?.length || 0}</p>
+  1523→                          <p className="text-white/50 text-sm">Объектов</p>
+  1524→                        </motion.div>
+  1525→                      </div>
+  1526→
+  1527→                      {/* User Management Section */}
+  1528→                      <div>
+  1529→                        <div className="flex items-center justify-between mb-4">
+  1530→                          <h3 className="text-lg font-semibold text-white">Управление пользователями</h3>
+  1531→                          <Button
+  1532→                            onClick={() => {
+  1533→                              resetUserForm();
+  1534→                              setShowUserForm(true);
+  1535→                            }}
+  1536→                            className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
+  1537→                            disabled={showUserForm && !editingUser}
+  1538→                          >
+  1539→                            <UserPlus className="w-4 h-4 mr-2" /> Добавить пользователя
+  1540→                          </Button>
+  1541→                        </div>
+  1542→
+  1543→                        {/* User Form */}
+  1544→                        {showUserForm && (
+  1545→                          <motion.div
+  1546→                            initial={{ opacity: 0, height: 0 }}
+  1547→                            animate={{ opacity: 1, height: 'auto' }}
+  1548→                            exit={{ opacity: 0, height: 0 }}
+  1549→                            className="mb-6 bg-[#0B0B0B] rounded-2xl border border-[#D4AF37]/20 p-6"
+  1550→                          >
+  1551→                            <div className="flex items-center justify-between mb-6">
+  1552→                              <h4 className="text-lg font-semibold text-white">
+  1553→                                {editingUser ? 'Редактирование пользователя' : 'Новый пользователь'}
+  1554→                              </h4>
+  1555→                              <button onClick={resetUserForm} className="text-white/40 hover:text-white transition-colors">
+  1556→                                <X className="w-5 h-5" />
+  1557→                              </button>
+  1558→                            </div>
+  1559→
+  1560→                            <div className="grid md:grid-cols-2 gap-4">
+  1561→                              <div>
+  1562→                                <label className="text-white/50 text-sm mb-1.5 block">Имя</label>
+  1563→                                <div className="relative">
+  1564→                                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+  1565→                                  <Input
+  1566→                                    value={userFormData.name}
+  1567→                                    onChange={e => setUserFormData(prev => ({ ...prev, name: e.target.value }))}
+  1568→                                    placeholder="Иван Иванов"
+  1569→                                    className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
+  1570→                                  />
+  1571→                                </div>
+  1572→                              </div>
+  1573→                              <div>
+  1574→                                <label className="text-white/50 text-sm mb-1.5 block">Email *</label>
+  1575→                                <div className="relative">
+  1576→                                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+  1577→                                  <Input
+  1578→                                    value={userFormData.email}
+  1579→                                    onChange={e => setUserFormData(prev => ({ ...prev, email: e.target.value }))}
+  1580→                                    placeholder="email@example.com"
+  1581→                                    type="email"
+  1582→                                    className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
+  1583→                                    required
+  1584→                                  />
+  1585→                                </div>
+  1586→                              </div>
+  1587→                              <div>
+  1588→                                <label className="text-white/50 text-sm mb-1.5 block">Телефон</label>
+  1589→                                <div className="relative">
+  1590→                                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+  1591→                                  <Input
+  1592→                                    value={userFormData.phone}
+  1593→                                    onChange={e => setUserFormData(prev => ({ ...prev, phone: e.target.value }))}
+  1594→                                    placeholder="+7 (999) 123-45-67"
+  1595→                                    type="tel"
+  1596→                                    className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
+  1597→                                  />
+  1598→                                </div>
+  1599→                              </div>
+  1600→                              <div>
+  1601→                                <label className="text-white/50 text-sm mb-1.5 block">
+  1602→                                  Пароль {editingUser ? '(оставьте пустым, чтобы не менять)' : '*'}
+  1603→                                </label>
+  1604→                                <div className="relative">
+  1605→                                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37]/50" />
+  1606→                                  <Input
+  1607→                                    value={userFormData.password}
+  1608→                                    onChange={e => setUserFormData(prev => ({ ...prev, password: e.target.value }))}
+  1609→                                    placeholder={editingUser ? 'Новый пароль' : 'Мин. 6 символов'}
+  1610→                                    type="password"
+  1611→                                    className="pl-10 bg-[#141414] border-white/10 focus:border-[#D4AF37] text-white placeholder:text-white/30"
+  1612→                                    required={!editingUser}
+  1613→                                  />
+  1614→                                </div>
+  1615→                              </div>
+  1616→                              <div>
+  1617→                                <label className="text-white/50 text-sm mb-1.5 block">Роль</label>
+  1618→                                <select
+  1619→                                  value={userFormData.role}
+  1620→                                  onChange={e => setUserFormData(prev => ({ ...prev, role: e.target.value }))}
+  1621→                                  className="w-full bg-[#141414] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-[#D4AF37] focus:outline-none"
+  1622→                                >
+  1623→                                  <option value="client">Клиент</option>
+  1624→                                  <option value="manager">Менеджер</option>
+  1625→                                  <option value="admin">Администратор</option>
+  1626→                                </select>
+  1627→                              </div>
+  1628→                            </div>
+  1629→
+  1630→                            <div className="flex gap-3 mt-6">
+  1631→                              <Button
+  1632→                                onClick={handleSaveUser}
+  1633→                                disabled={isLoading}
+  1634→                                className="bg-[#D4AF37] text-black hover:bg-[#F1D28A] font-semibold"
+  1635→                              >
+  1636→                                {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+  1637→                                {editingUser ? 'Сохранить' : 'Создать'}
+  1638→                              </Button>
+  1639→                              <Button
+  1640→                                onClick={resetUserForm}
+  1641→                                variant="outline"
+  1642→                                className="border-white/10 text-white/60 hover:text-white hover:border-white/20"
+  1643→                              >
+  1644→                                Отмена
+  1645→                              </Button>
+  1646→                            </div>
+  1647→                          </motion.div>
+  1648→                        )}
+  1649→
+  1650→                        {/* Users Table */}
+  1651→                        <div className="overflow-x-auto">
+  1652→                          <table className="w-full text-sm">
+  1653→                            <thead>
+  1654→                              <tr className="border-b border-white/10">
+  1655→                                <th className="text-left text-white/50 py-3 px-2">Пользователь</th>
+  1656→                                <th className="text-left text-white/50 py-3 px-2">Роль</th>
+  1657→                                <th className="text-left text-white/50 py-3 px-2">Статус</th>
+  1658→                                <th className="text-left text-white/50 py-3 px-2 hidden md:table-cell">Объекты</th>
+  1659→                                <th className="text-left text-white/50 py-3 px-2 hidden sm:table-cell">Дата</th>
+  1660→                                <th className="text-right text-white/50 py-3 px-2">Действия</th>
+  1661→                              </tr>
+  1662→                            </thead>
+  1663→                            <tbody>
+  1664→                              {adminData.users.map((u: any) => (
+  1665→                                <tr
+  1666→                                  key={u.id}
+  1667→                                  className={`border-b border-white/5 transition-colors ${
+  1668→                                    u.blocked ? 'bg-red-500/5' : 'hover:bg-white/[0.02]'
+  1669→                                  }`}
+  1670→                                >
+  1671→                                  <td className="py-3 px-2">
+  1672→                                    <div className="flex items-center gap-3">
+  1673→                                      <div className="w-9 h-9 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center shrink-0">
+  1674→                                        <span className="text-[#D4AF37] font-semibold text-sm">
+  1675→                                          {(u.name || u.email)[0].toUpperCase()}
+  1676→                                        </span>
+  1677→                                      </div>
+  1678→                                      <div className="min-w-0">
+  1679→                                        <p className="text-white truncate">{u.name || 'Без имени'}</p>
+  1680→                                        <p className="text-white/40 text-xs truncate">{u.email}</p>
+  1681→                                      </div>
+  1682→                                    </div>
+  1683→                                  </td>
+  1684→                                  <td className="py-3 px-2">
+  1685→                                    {u.role === 'admin' ? (
+  1686→                                      <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-medium">
+  1687→                                        Админ
+  1688→                                      </span>
+  1689→                                    ) : (
+  1690→                                      <select
+  1691→                                        value={u.role}
+  1692→                                        onChange={e => handleRoleChange(u.id, e.target.value)}
+  1693→                                        className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#D4AF37] ${
+  1694→                                          u.role === 'manager'
+  1695→                                            ? 'bg-blue-500/20 text-blue-400'
+  1696→                                            : 'bg-[#D4AF37]/20 text-[#D4AF37]'
+  1697→                                        }`}
+  1698→                                      >
+  1699→                                        <option value="client">Клиент</option>
+  1700→                                        <option value="manager">Менеджер</option>
+  1701→                                      </select>
+  1702→                                    )}
+  1703→                                  </td>
+  1704→                                  <td className="py-3 px-2">
+  1705→                                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+  1706→                                      u.blocked
+  1707→                                        ? 'bg-red-500/20 text-red-400'
+  1708→                                        : 'bg-green-500/20 text-green-400'
+  1709→                                    }`}>
+  1710→                                      {u.blocked ? 'Заблокирован' : 'Активен'}
+  1711→                                    </span>
+  1712→                                  </td>
+  1713→                                  <td className="py-3 px-2 hidden md:table-cell">
+  1714→                                    {u.role === 'manager' || u.role === 'admin' ? (
+  1715→                                      <span className="text-white/50 text-xs">
+  1716→                                        {u._count?.properties ?? '—'} объектов
+  1717→                                      </span>
+  1718→                                    ) : (
+  1719→                                      <span className="text-white/30 text-xs">—</span>
+  1720→                                    )}
+  1721→                                  </td>
+  1722→                                  <td className="py-3 px-2 text-white/40 hidden sm:table-cell">
+  1723→                                    {new Date(u.createdAt).toLocaleDateString('ru-RU')}
+  1724→                                  </td>
+  1725→                                  <td className="py-3 px-2">
+  1726→                                    <div className="flex items-center justify-end gap-1">
+  1727→                                      <button
+  1728→                                        onClick={() => startEditUser(u)}
+  1729→                                        className="p-1.5 rounded-lg text-white/40 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors"
+  1730→                                        title="Редактировать"
+  1731→                                      >
+  1732→                                        <Pencil className="w-4 h-4" />
+  1733→                                      </button>
+  1734→                                      {u.role !== 'admin' && (
+  1735→                                        <>
+  1736→                                          <button
+  1737→                                            onClick={() => handleToggleBlock(u)}
+  1738→                                            className={`p-1.5 rounded-lg transition-colors ${
+  1739→                                              u.blocked
+  1740→                                                ? 'text-red-400 hover:text-green-400 hover:bg-green-500/10'
+  1741→                                                : 'text-white/40 hover:text-red-400 hover:bg-red-500/10'
+  1742→                                            }`}
+  1743→                                            title={u.blocked ? 'Разблокировать' : 'Заблокировать'}
+  1744→                                          >
+  1745→                                            {u.blocked ? <ShieldCheck className="w-4 h-4" /> : <ShieldOff className="w-4 h-4" />}
+  1746→                                          </button>
+  1747→                                          <button
+  1748→                                            onClick={() => handleDeleteUser(u.id)}
+  1749→                                            className="p-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+  1750→                                            title="Удалить"
+  1751→                                          >
+  1752→                                            <Trash2 className="w-4 h-4" />
+  1753→                                          </button>
+  1754→                                        </>
+  1755→                                      )}
+  1756→                                    </div>
+  1757→                                  </td>
+  1758→                                </tr>
+  1759→                              ))}
+  1760→                            </tbody>
+  1761→                          </table>
+  1762→                        </div>
+  1763→                      </div>
+  1764→
+  1765→                      {/* Quick Stats for Managers */}
+  1766→                      {adminData.users.filter((u: any) => u.role === 'manager').length > 0 && (
+  1767→                        <div>
+  1768→                          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+  1769→                            <BarChart3 className="w-5 h-5 text-[#D4AF37]" /> Статистика менеджеров
+  1770→                          </h3>
+  1771→                          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  1772→                            {adminData.users
+  1773→                              .filter((u: any) => u.role === 'manager')
+  1774→                              .map((u: any) => (
+  1775→                                <motion.div
+  1776→                                  key={u.id}
+  1777→                                  whileHover={{ scale: 1.02 }}
+  1778→                                  className="bg-[#0B0B0B] rounded-xl p-4 border border-white/5 flex items-center gap-3"
+  1779→                                >
+  1780→                                  <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0">
+  1781→                                    <span className="text-blue-400 font-semibold text-sm">
+  1782→                                      {(u.name || u.email)[0].toUpperCase()}
+  1783→                                    </span>
+  1784→                                  </div>
+  1785→                                  <div className="min-w-0 flex-1">
+  1786→                                    <p className="text-white text-sm font-medium truncate">{u.name || u.email}</p>
+  1787→                                    <p className="text-white/40 text-xs">
+  1788→                                      {u._count?.properties ?? 0} объектов
+  1789→                                    </p>
+  1790→                                  </div>
+  1791→                                  <div className="text-right">
+  1792→                                    <p className="text-[#D4AF37] font-bold">{u._count?.properties ?? 0}</p>
+  1793→                                  </div>
+  1794→                                </motion.div>
+  1795→                              ))}
+  1796→                          </div>
+  1797→                        </div>
+  1798→                      )}
+  1799→
+  1800→                      {/* Applications */}
+  1801→                      <div>
+  1802→                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+  1803→                          <FileText className="w-5 h-5 text-[#D4AF37]" /> Заявки
+  1804→                        </h3>
+  1805→                        {adminData.applications.length === 0 ? (
+  1806→                          <div className="text-center py-8 text-white/40">
+  1807→                            <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
+  1808→                            <p>Нет заявок</p>
+  1809→                          </div>
+  1810→                        ) : (
+  1811→                          <div className="space-y-2 max-h-96 overflow-y-auto pr-1"
+  1812→                            style={{ scrollbarWidth: 'thin', scrollbarColor: '#D4AF37 transparent' }}
+  1813→                          >
+  1814→                            {adminData.applications.map((app: any) => (
+  1815→                              <div key={app.id} className="flex items-center gap-3 p-3 rounded-lg bg-[#0B0B0B] border border-white/5 hover:border-white/10 transition-colors">
+  1816→                                <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor[app.status] || 'bg-white/10 text-white/50'}`}>
+  1817→                                  {statusLabel[app.status] || app.status}
+  1818→                                </span>
+  1819→                                <span className="text-white/70 text-sm flex-1">
+  1820→                                  {typeLabel[app.type] || app.type} — {app.user?.name || app.user?.email}
+  1821→                                </span>
+  1822→                                <span className="text-white/30 text-xs">
+  1823→                                  {new Date(app.createdAt).toLocaleDateString('ru-RU')}
+  1824→                                </span>
+  1825→                              </div>
+  1826→                            ))}
+  1827→                          </div>
+  1828→                        )}
+  1829→                      </div>
+  1830→                    </div>
+  1831→                  )}
+  1832→                </div>
+  1833→              )}
+  1834→            </div>
+  1835→          </div>
+  1836→        </div>
+  1837→      </div>
+  1838→    </div>
+  1839→  );
+  1840→}
+  1841→
