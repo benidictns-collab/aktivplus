@@ -3,16 +3,13 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     console.log('[instrumentation] Server starting...');
 
-    // Ensure DATABASE_URL is set — support both sandbox and production paths
+    // Ensure DATABASE_URL is set for PostgreSQL
     if (!process.env.DATABASE_URL) {
-      // Production: /app/db/custom.db, Sandbox: ./prisma/data.db
-      const fs = await import('fs');
-      if (fs.existsSync('/app/db/custom.db')) {
-        process.env.DATABASE_URL = 'file:/app/db/custom.db';
-      } else {
-        process.env.DATABASE_URL = 'file:./prisma/data.db';
-      }
-      console.log('[instrumentation] DATABASE_URL set to:', process.env.DATABASE_URL);
+      console.error('[instrumentation] ERROR: DATABASE_URL environment variable is not set!');
+      console.error('[instrumentation] Please set DATABASE_URL to your PostgreSQL connection string.');
+      console.error('[instrumentation] Example: postgresql://user:password@host:5432/dbname');
+    } else {
+      console.log('[instrumentation] DATABASE_URL is configured');
     }
 
     try {

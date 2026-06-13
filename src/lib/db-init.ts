@@ -16,10 +16,10 @@ export async function initDatabase() {
 }
 
 async function _initDatabase() {
-  // Ensure DATABASE_URL is set
   if (!process.env.DATABASE_URL) {
-    process.env.DATABASE_URL = 'file:./prisma/data.db';
-    console.log('[db-init] DATABASE_URL set to:', process.env.DATABASE_URL);
+    console.error('[db-init] DATABASE_URL is not set. Cannot initialize database.');
+    initialized = true;
+    return;
   }
 
   const prisma = new PrismaClient({
@@ -47,7 +47,7 @@ async function _initDatabase() {
       execSync('npx prisma db push --accept-data-loss', {
         stdio: 'pipe',
         env: { ...process.env },
-        timeout: 30000,
+        timeout: 60000,
       });
       console.log('[db-init] Schema pushed successfully');
       // Try seeding again
@@ -106,7 +106,7 @@ async function seedDatabase(prisma: PrismaClient) {
         dealType: 'sale',
         status: 'Продажа',
         description: 'Роскошный пентхаус с панорамным видом на реку Дон. Авторский дизайн, терраса с видом на набережную. Два уровня, потолки 4.5 метра.',
-        images: JSON.stringify(['/images/properties/property-1.jpg', '/images/sale-1.jpg', '/images/buy-1.jpg', '/images/interior-1.jpg']),
+        images: JSON.stringify(['/images/sale-1.jpg', '/images/buy-1.jpg', '/images/interior-1.jpg', '/images/apartment-1.jpg']),
         address: 'ул. Набережная, 45',
         floor: '25/25',
         parking: '2 машиноместа',
@@ -131,7 +131,7 @@ async function seedDatabase(prisma: PrismaClient) {
         dealType: 'sale',
         status: 'Продажа',
         description: 'Элитный коттедж в закрытом посёлке. Бассейн, сауна, гараж на 3 авто. Участок 15 соток с ландшафтным дизайном.',
-        images: JSON.stringify(['/images/properties/property-2.jpg', '/images/buy-1.jpg', '/images/sale-1.jpg', '/images/luxury-1.jpg']),
+        images: JSON.stringify(['/images/buy-1.jpg', '/images/sale-1.jpg', '/images/interior-1.jpg', '/images/luxury-1.jpg']),
         address: 'Западный жилой массив, ул. Солнечная, 12',
         floor: '3 этажа',
         parking: 'Гараж на 3 авто',
@@ -156,7 +156,7 @@ async function seedDatabase(prisma: PrismaClient) {
         dealType: 'sale',
         status: 'Продажа',
         description: 'Стильные апартаменты в историческом центре города. Высокие потолки, кирпичные стены, вид на собор. Полностью меблированы.',
-        images: JSON.stringify(['/images/properties/property-3.jpg', '/images/interior-1.jpg', '/images/sale-1.jpg', '/images/apartment-1.jpg']),
+        images: JSON.stringify(['/images/interior-1.jpg', '/images/sale-1.jpg', '/images/buy-1.jpg', '/images/apartment-1.jpg']),
         address: 'ул. Большая Садовая, 78',
         floor: '8/12',
         parking: 'Подземный паркинг',
@@ -181,7 +181,7 @@ async function seedDatabase(prisma: PrismaClient) {
         dealType: 'sale',
         status: 'Продажа',
         description: 'Эксклюзивная вилла с видом на реку. Винный погреб, кинозал, спа-зона. Участок 25 соток с собственным причалом.',
-        images: JSON.stringify(['/images/properties/property-4.jpg', '/images/luxury-1.jpg', '/images/sale-1.jpg', '/images/buy-1.jpg']),
+        images: JSON.stringify(['/images/luxury-1.jpg', '/images/sale-1.jpg', '/images/buy-1.jpg', '/images/apartment-1.jpg']),
         address: 'Левенцовка, ул. Речная, 5',
         floor: '3 этажа + цоколь',
         parking: 'Гараж на 4 авто',
@@ -206,7 +206,7 @@ async function seedDatabase(prisma: PrismaClient) {
         dealType: 'sale',
         status: 'Продажа',
         description: 'Современный таунхаус в новом жилом комплексе. Свой сад, терраса для барбекю. Охраняемая территория, детский городок.',
-        images: JSON.stringify(['/images/properties/property-5.jpg', '/images/apartment-1.jpg', '/images/buy-1.jpg', '/images/sale-1.jpg']),
+        images: JSON.stringify(['/images/apartment-1.jpg', '/images/buy-1.jpg', '/images/sale-1.jpg', '/images/interior-1.jpg']),
         address: 'Суворовский, ул. Парковая, 23',
         floor: '3 этажа',
         parking: 'Гараж на 2 авто',
@@ -231,7 +231,7 @@ async function seedDatabase(prisma: PrismaClient) {
         dealType: 'sale',
         status: 'Продажа',
         description: 'Стильная студия в новом ЖК бизнес-класса. Панорамное остекление с видом на город. Современная планировка.',
-        images: JSON.stringify(['/images/properties/property-6.jpg', '/images/house-1.jpg', '/images/interior-1.jpg', '/images/luxury-1.jpg']),
+        images: JSON.stringify(['/images/house-1.jpg', '/images/interior-1.jpg', '/images/sale-1.jpg', '/images/luxury-1.jpg']),
         address: 'ул. Социалистическая, 112',
         floor: '18/24',
         parking: '1 машиноместо',
