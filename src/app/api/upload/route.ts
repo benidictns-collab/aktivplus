@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { db } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 
 export const dynamic = 'force-dynamic';
@@ -23,29 +22,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file size (10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    // Validate file size (5MB — base64 in DB is ~33% larger)
+    if (file.size > 5 * 1024 * 1024) {
       return NextResponse.json(
-        { error: 'Файл слишком большой (макс. 10 МБ)' },
+        { error: 'Файл слишком большой (макс. 5 МБ)' },
         { status: 400 }
       );
     }
+
+    // Convert to base64
+    const arrayBuffer = await file.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString('base64');
 
     // Generate unique filename
     const ext = file.name.split('.').pop() || 'jpg';
     const filename = `${uuidv4()}.${ext}`;
 
-    // Ensure upload directory exists
-    const uploadDir = join(process.cwd(), 'public', 'uploads', 'properties');
-    await mkdir(uploadDir, { recursive: true });
+    // Store in database
+    await db.upload.create({
+      data: {
+        filename,
+        mimeType: file.type,
+        data: base64,
+      },
+    });
 
-    // Write file
-    const filePath = join(uploadDir, filename);
-    const bytes = await file.arrayBuffer();
-    await writeFile(filePath, Buffer.from(bytes));
-
-    // Return the public URL path
-    const url = `/uploads/properties/${filename}`;
+    // Return the URL that will be served by /api/images/[filename]
+    const url = `/api/images/${filename}`;
 
     return NextResponse.json({ url, filename });
   } catch (error) {
