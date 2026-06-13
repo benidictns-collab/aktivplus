@@ -48,3 +48,35 @@ Stage Summary:
 - Database re-seeded with 6 premium properties with correct image paths
 - Lint passes clean
 - All pages verified working via agent browser
+---
+Task ID: 3
+Agent: Main Agent
+Task: Fix project not displaying at https://aktivplus-agency.space-z.ai/ (ERR_INVALID_RESPONSE)
+
+Work Log:
+- Examined current project state: Dockerfile and production-server.cjs already removed, Caddyfile existed
+- Removed old Caddyfile and recreated minimal version for Z.ai gateway (port 81 → port 3000)
+- Fixed DATABASE_URL in .env from "file:./data.db" to "file:./prisma/data.db" for correct runtime resolution
+- Removed dead code: festivity-hero.tsx (Three.js import, unused), minimalist-hero.tsx (unused)
+- Fixed SSR-unsafe code in navigation.ts: added typeof window check for window.scrollTo
+- Refactored main page (page.tsx) to use dynamic imports with ssr:false for page components and heavy sections
+- This reduced SSR memory from crash-level to ~190MB stable
+- Updated instrumentation.ts with DATABASE_URL fallback
+- Enhanced db-init.ts with automatic prisma db push on database access failure
+- Updated all property seed data to include proper property images (/images/properties/property-X.jpg)
+- Created .zscripts/dev.sh for platform startup: builds production then starts with double-fork
+- Discovered that background processes get killed between Bash sessions
+- Used double-fork pattern to properly detach server process
+- Server now runs stably on port 3000, gateway returns 200 on port 81
+- Verified all API endpoints work: health, properties, login, etc.
+- Verified all pages render correctly via agent browser
+- Screenshot saved to /home/z/my-project/download/aktivplus-homepage.png
+
+Stage Summary:
+- Root cause: main page imported ALL components eagerly causing massive SSR memory spike that killed the server
+- Fix: dynamic imports with ssr:false for heavy sections (AdvantagesSection, MapSection) and all page components
+- Server now runs stably at ~190MB RSS with production build
+- Local gateway (port 81) returns 200 and serves the full site correctly
+- Public URL (https://aktivplus-agency.space-z.ai/) may need platform redeploy to pick up the changes
+- All 32 images verified present and referenced correctly
+- Database seeded with 6 properties, admin user, manager user

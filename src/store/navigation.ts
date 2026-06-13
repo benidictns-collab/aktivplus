@@ -27,7 +27,9 @@ export const useNavigationStore = create<NavigationState>((set) => ({
   isPropertyModalOpen: false,
   navigate: (page) => {
     set({ currentPage: page });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   },
   openPropertyModal: (id) =>
     set({ selectedPropertyId: id, isPropertyModalOpen: true }),

@@ -1,31 +1,65 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { useNavigationStore } from '@/store/navigation';
 
-// Section components for the home page
+// Core layout components — always needed, load eagerly
 import Header from '@/components/sections/Header';
+import Footer from '@/components/sections/Footer';
+
+// Home page sections — use dynamic imports for heavy components
 import HeroSection from '@/components/sections/HeroSection';
-import AdvantagesSection from '@/components/sections/AdvantagesSection';
 import PopularPropertiesSection from '@/components/sections/PopularPropertiesSection';
 import ServicesSection from '@/components/sections/ServicesSection';
 import AboutSection from '@/components/sections/AboutSection';
 import ReviewsSection from '@/components/sections/ReviewsSection';
 import ApplicationFormSection from '@/components/sections/ApplicationFormSection';
-import MapSection from '@/components/sections/MapSection';
-import Footer from '@/components/sections/Footer';
 
-// Page components for SPA navigation
-import AboutPage from '@/components/pages/AboutPage';
-import ObjectsPage from '@/components/pages/ObjectsPage';
-import CatalogPage from '@/components/pages/CatalogPage';
-import PropertyModal from '@/components/pages/PropertyModal';
-import ServicesPage from '@/components/pages/ServicesPage';
-import ContactsPage from '@/components/pages/ContactsPage';
-import CabinetPage from '@/components/pages/CabinetPage';
-import DashboardPage from '@/components/pages/DashboardPage';
-import PrivacyPage from '@/components/pages/PrivacyPage';
-import TermsPage from '@/components/pages/TermsPage';
+// Heavy sections — load with ssr: false to reduce server memory
+const AdvantagesSection = dynamic(() => import('@/components/sections/AdvantagesSection'), {
+  ssr: false,
+  loading: () => (
+    <div className="relative z-30 text-center py-20 md:py-28 px-4 bg-[#0B0B0B]">
+      <div className="flex items-center justify-center gap-3 mb-6">
+        <div className="h-px w-12 bg-[#D4AF37]" />
+        <span className="text-[#D4AF37] text-sm font-medium tracking-[0.2em] uppercase">
+          Наши преимущества
+        </span>
+        <div className="h-px w-12 bg-[#D4AF37]" />
+      </div>
+      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+        Почему <span className="gold-text">выбирают нас</span>
+      </h2>
+      <p className="text-white/50 max-w-2xl mx-auto text-base md:text-lg">
+        Более 17 лет мы помогаем людям найти недвижимость мечты в Ростове-на-Дону
+      </p>
+    </div>
+  ),
+});
+
+const MapSection = dynamic(() => import('@/components/sections/MapSection'), {
+  ssr: false,
+  loading: () => (
+    <div className="py-20 bg-[#0B0B0B] text-center">
+      <div className="h-32 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+      </div>
+    </div>
+  ),
+});
+
+// Page components — lazy loaded to reduce initial bundle size and SSR memory
+const AboutPage = dynamic(() => import('@/components/pages/AboutPage'), { ssr: false });
+const ObjectsPage = dynamic(() => import('@/components/pages/ObjectsPage'), { ssr: false });
+const CatalogPage = dynamic(() => import('@/components/pages/CatalogPage'), { ssr: false });
+const PropertyModal = dynamic(() => import('@/components/pages/PropertyModal'), { ssr: false });
+const ServicesPage = dynamic(() => import('@/components/pages/ServicesPage'), { ssr: false });
+const ContactsPage = dynamic(() => import('@/components/pages/ContactsPage'), { ssr: false });
+const CabinetPage = dynamic(() => import('@/components/pages/CabinetPage'), { ssr: false });
+const DashboardPage = dynamic(() => import('@/components/pages/DashboardPage'), { ssr: false });
+const PrivacyPage = dynamic(() => import('@/components/pages/PrivacyPage'), { ssr: false });
+const TermsPage = dynamic(() => import('@/components/pages/TermsPage'), { ssr: false });
 
 function HomePage() {
   return (
