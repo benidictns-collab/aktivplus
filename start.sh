@@ -1,6 +1,6 @@
 #!/bin/sh
 # Start script for Timeweb Cloud App deployment
-# Assembles DATABASE_URL with proper URL encoding and starts Next.js immediately
+# Assembles DATABASE_URL with proper URL encoding and starts Next.js
 
 echo "========================================="
 echo "[start] Aktiv Plus — Starting"
@@ -39,7 +39,8 @@ else
   echo "[start] DATABASE_URL is already set"
 fi
 
-# Start Next.js server IMMEDIATELY using direct binary (not npx)
-# Database initialization happens inside the app via instrumentation.ts
+# Start Next.js server IMMEDIATELY using direct binary
+# Database initialization (prisma db push + seed) happens inside the app
+# via instrumentation.ts → db-init.ts (runs in background, non-blocking)
 echo "[start] Starting Next.js server..."
 exec ./node_modules/.bin/next start -p "$PORT" -H "$HOSTNAME"

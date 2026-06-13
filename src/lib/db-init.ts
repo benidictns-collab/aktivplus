@@ -27,26 +27,45 @@ async function _initDatabase() {
   });
 
   try {
-    // Quick connectivity check (2 second timeout)
+    // Quick connectivity check (5 second timeout)
     await Promise.race([
       prisma.$queryRaw`SELECT 1`,
       new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 5000)),
     ]);
     console.log('[db-init] Database is accessible');
 
-    // Check if tables exist and seed if needed
-    let userCount = 0;
+    // ALWAYS push schema to ensure all tables exist (including new ones like ImageAsset)
+    // This is safe — prisma db push only creates missing tables/columns
+    let needsSeed = false;
     try {
-      userCount = await prisma.user.count();
+      const userCount = await prisma.user.count();
+      console.log('[db-init] User table exists, count:', userCount);
+      if (userCount === 0) needsSeed = true;
     } catch {
-      // Tables don't exist — run prisma db push asynchronously (non-blocking)
-      console.log('[db-init] Tables do not exist yet, running prisma db push...');
+      // User table doesn't exist yet — need full init
+      console.log('[db-init] Tables do not exist yet');
+      needsSeed = true;
+    }
+
+    // Check if ImageAsset table exists (critical for file upload)
+    let imageAssetTableExists = false;
+    try {
+      await prisma.imageAsset.count();
+      imageAssetTableExists = true;
+      console.log('[db-init] ImageAsset table exists');
+    } catch {
+      console.log('[db-init] ImageAsset table does NOT exist — will push schema');
+    }
+
+    // Push schema if any table is missing
+    if (!imageAssetTableExists || needsSeed) {
+      console.log('[db-init] Running prisma db push to ensure all tables exist...');
       try {
         const { exec } = await import('child_process');
         await new Promise<void>((resolve, reject) => {
-          const child = exec('npx prisma db push --accept-data-loss', {
+          const child = exec('./node_modules/.bin/prisma db push --accept-data-loss', {
             env: { ...process.env },
-            timeout: 30000,
+            timeout: 60000,
           }, (error) => {
             if (error) reject(error);
             else resolve();
@@ -55,17 +74,32 @@ async function _initDatabase() {
           child.stderr?.on('data', (data: Buffer) => process.stderr.write(data));
         });
         console.log('[db-init] Schema pushed successfully');
-        userCount = await prisma.user.count();
       } catch (pushError) {
         console.error('[db-init] Failed to push schema:', (pushError as Error).message);
+        // Try creating ImageAsset table directly as fallback
+        try {
+          await prisma.$executeRawUnsafe(`
+            CREATE TABLE IF NOT EXISTS "ImageAsset" (
+              "id" TEXT NOT NULL,
+              "data" BYTEA NOT NULL,
+              "mimeType" TEXT NOT NULL,
+              "size" INTEGER NOT NULL,
+              "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              CONSTRAINT "ImageAsset_pkey" PRIMARY KEY ("id")
+            );
+          `);
+          console.log('[db-init] ImageAsset table created via fallback SQL');
+        } catch (sqlError) {
+          console.error('[db-init] Fallback SQL also failed:', (sqlError as Error).message);
+        }
       }
     }
 
-    if (userCount === 0) {
+    if (needsSeed) {
       console.log('[db-init] No users found, seeding database...');
       await seedDatabase(prisma);
     } else {
-      console.log('[db-init] Database has', userCount, 'users, skipping seed');
+      console.log('[db-init] Database already seeded, skipping');
     }
   } catch (error) {
     console.error('[db-init] Database connection failed:', (error as Error).message);
