@@ -3,24 +3,16 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     console.log('[instrumentation] Server starting...');
 
-    // Ensure DATABASE_URL is set for PostgreSQL
     if (!process.env.DATABASE_URL) {
-      console.error('[instrumentation] ERROR: DATABASE_URL environment variable is not set!');
-      console.error('[instrumentation] Please set DATABASE_URL to your PostgreSQL connection string.');
-      console.error('[instrumentation] Example: postgresql://user:password@host:5432/dbname');
+      console.error('[instrumentation] DATABASE_URL is not set. Database features will not work.');
     } else {
       console.log('[instrumentation] DATABASE_URL is configured');
-    }
-
-    try {
-      // Dynamic import to avoid bundling issues
-      const { initDatabase } = await import('@/lib/db-init');
-      await initDatabase();
-      console.log('[instrumentation] Database initialized successfully');
-    } catch (error) {
-      console.error('[instrumentation] Database initialization failed:', (error as Error).message);
-      // Don't crash — the app can still serve static content
-      // API routes will fail gracefully until DB is available
+      // Initialize database in the background — don't block server startup
+      // The server needs to start quickly for health checks to pass
+      import('@/lib/db-init')
+        .then(({ initDatabase }) => initDatabase())
+        .then(() => console.log('[instrumentation] Database initialized successfully'))
+        .catch((error) => console.error('[instrumentation] Database initialization failed:', error.message));
     }
   }
 }

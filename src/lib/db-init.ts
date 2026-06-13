@@ -27,12 +27,30 @@ async function _initDatabase() {
   });
 
   try {
-    // Try to query the database
+    // Check if database is accessible
     await prisma.$queryRaw`SELECT 1`;
     console.log('[db-init] Database is accessible');
 
-    // Seed if no users exist
-    const userCount = await prisma.user.count();
+    // Check if tables exist by counting users
+    let userCount = 0;
+    try {
+      userCount = await prisma.user.count();
+    } catch {
+      console.log('[db-init] Tables do not exist yet, running prisma db push...');
+      try {
+        const { execSync } = await import('child_process');
+        execSync('npx prisma db push --accept-data-loss', {
+          stdio: 'pipe',
+          env: { ...process.env },
+          timeout: 60000,
+        });
+        console.log('[db-init] Schema pushed successfully');
+        userCount = await prisma.user.count();
+      } catch (pushError) {
+        console.error('[db-init] Failed to push schema:', (pushError as Error).message);
+      }
+    }
+
     if (userCount === 0) {
       console.log('[db-init] No users found, seeding database...');
       await seedDatabase(prisma);
@@ -40,24 +58,7 @@ async function _initDatabase() {
       console.log('[db-init] Database has', userCount, 'users, skipping seed');
     }
   } catch (error) {
-    console.error('[db-init] Database not accessible:', (error as Error).message);
-    console.log('[db-init] Attempting to push schema...');
-    try {
-      const { execSync } = await import('child_process');
-      execSync('npx prisma db push --accept-data-loss', {
-        stdio: 'pipe',
-        env: { ...process.env },
-        timeout: 60000,
-      });
-      console.log('[db-init] Schema pushed successfully');
-      // Try seeding again
-      const userCount = await prisma.user.count();
-      if (userCount === 0) {
-        await seedDatabase(prisma);
-      }
-    } catch (pushError) {
-      console.error('[db-init] Failed to push schema:', (pushError as Error).message);
-    }
+    console.error('[db-init] Database connection failed:', (error as Error).message);
   } finally {
     await prisma.$disconnect();
   }
@@ -68,7 +69,6 @@ async function _initDatabase() {
 
 async function seedDatabase(prisma: PrismaClient) {
   try {
-    // Create admin
     const adminPw = await bcrypt.hash('24345678Fe', 12);
     await prisma.user.create({
       data: {
@@ -81,7 +81,6 @@ async function seedDatabase(prisma: PrismaClient) {
     });
     console.log('[db-init] Admin created');
 
-    // Create manager
     const managerPw = await bcrypt.hash('manager123456', 12);
     const manager = await prisma.user.create({
       data: {
@@ -94,7 +93,6 @@ async function seedDatabase(prisma: PrismaClient) {
     });
     console.log('[db-init] Manager created');
 
-    // Seed properties with images
     const properties = [
       {
         title: 'Пентхаус на Набережной',
