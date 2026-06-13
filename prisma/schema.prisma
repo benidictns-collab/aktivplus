@@ -93,10 +93,4 @@ model Message {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Upload {
-  id        String @id @default(cuid())
-  filename  String @unique
-  mimeType  String
-  data      String // base64 encoded
-  createdAt DateTime @default(now())
-}
+

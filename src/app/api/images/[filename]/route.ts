@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { readFile, stat } from 'fs/promises';
+import { join } from 'path';
 
 export const dynamic = 'force-dynamic';
+
+// Upload directory — matches upload route
+const UPLOAD_DIR = process.env.UPLOAD_DIR || join(process.cwd(), 'upload');
+
+// MIME type map
+const MIME_TYPES: Record<string, string> = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+};
 
 export async function GET(
   request: NextRequest,
@@ -10,23 +24,34 @@ export async function GET(
   try {
     const { filename } = await params;
 
-    const upload = await db.upload.findUnique({
-      where: { filename },
-    });
-
-    if (!upload) {
-      return NextResponse.json({ error: 'Не найдено' }, { status: 404 });
+    // Prevent directory traversal attacks
+    if (filename.includes('/') || filename.includes('..')) {
+      return NextResponse.json({ error: 'Некорректное имя файла' }, { status: 400 });
     }
 
-    // Decode base64 and return as image
-    const buffer = Buffer.from(upload.data, 'base64');
+    const filePath = join(UPLOAD_DIR, filename);
+
+    // Check file exists
+    let fileStat;
+    try {
+      fileStat = await stat(filePath);
+    } catch {
+      return NextResponse.json({ error: 'Файл не найден' }, { status: 404 });
+    }
+
+    // Read file
+    const buffer = await readFile(filePath);
+
+    // Determine content type from extension
+    const ext = '.' + filename.split('.').pop()?.toLowerCase();
+    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
     return new NextResponse(buffer, {
       status: 200,
       headers: {
-        'Content-Type': upload.mimeType,
+        'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
-        'Content-Length': buffer.length.toString(),
+        'Content-Length': fileStat.size.toString(),
       },
     });
   } catch (error) {
