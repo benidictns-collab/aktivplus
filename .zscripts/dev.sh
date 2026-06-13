@@ -49,10 +49,20 @@ npx next build 2>&1 || {
   exec npx next dev -p 3000
 }
 
-# Start the production server using double-fork for reliable background process
-echo "[dev.sh] Starting Next.js production server on port 3000..."
+# Copy static files and public directory to standalone output
+echo "[dev.sh] Preparing standalone server..."
+cp -r .next/static .next/standalone/.next/static 2>/dev/null || true
+cp -r public .next/standalone/public 2>/dev/null || true
+cp -r prisma .next/standalone/prisma 2>/dev/null || true
+
+# Start the standalone production server (required for output: 'standalone')
+echo "[dev.sh] Starting Next.js standalone server on port 3000..."
 (
-  nohup node node_modules/.bin/next start -p 3000 > /tmp/next-server.log 2>&1 &
+  cd .next/standalone
+  HOSTNAME="0.0.0.0" \
+  PORT=3000 \
+  NODE_ENV=production \
+  nohup node server.js > /tmp/next-server.log 2>&1 &
   echo $! > /tmp/next-server.pid
 ) &
 
