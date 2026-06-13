@@ -70,6 +70,7 @@ export default function PropertyModal() {
 
   useEffect(() => {
     if (isPropertyModalOpen && selectedPropertyId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoading(true);
       setCurrentImage(0);
       setShowForm(false);

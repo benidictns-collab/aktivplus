@@ -1,62 +1,35 @@
-import fs from 'fs';
-import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 let initialized = false;
+let initPromise: Promise<void> | null = null;
 
 export async function initDatabase() {
   if (initialized) return;
+  if (initPromise) {
+    await initPromise;
+    return;
+  }
 
+  initPromise = _initDatabase();
+  await initPromise;
+}
+
+async function _initDatabase() {
   // Ensure DATABASE_URL is set
-  // Prisma resolves file:./ paths relative to the schema file (prisma/schema.prisma)
-  // So file:./data.db resolves to prisma/data.db
   if (!process.env.DATABASE_URL) {
     process.env.DATABASE_URL = 'file:./data.db';
     console.log('[db-init] DATABASE_URL set to:', process.env.DATABASE_URL);
   }
-
-  // Resolve the actual database file path for checking
-  // Prisma resolves relative paths from the prisma/ directory
-  const dbRelativePath = process.env.DATABASE_URL.replace('file:', '');
-  const dbAbsolutePath = path.resolve(process.cwd(), 'prisma', dbRelativePath.replace(/^\.\//, ''));
-  const dbDir = path.dirname(dbAbsolutePath);
-
-  // Ensure the directory for the database exists
-  if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
-    console.log('[db-init] Created directory:', dbDir);
-  }
-
-  // Check if database file exists
-  const dbExists = fs.existsSync(dbAbsolutePath);
-  console.log('[db-init] Database file exists:', dbExists, 'at:', dbAbsolutePath);
 
   const prisma = new PrismaClient({
     log: ['error'],
   });
 
   try {
-    // Try to query the database — if it fails, schema needs to be pushed
-    try {
-      await prisma.$queryRaw`SELECT 1`;
-      console.log('[db-init] Database is accessible');
-    } catch {
-      console.log('[db-init] Database not accessible, running prisma db push...');
-
-      // Use execSync for prisma db push as it's a one-time setup
-      const { execSync } = await import('child_process');
-      try {
-        execSync('npx prisma db push --accept-data-loss', {
-          stdio: 'pipe',
-          cwd: process.cwd(),
-          timeout: 30000,
-        });
-        console.log('[db-init] Schema pushed successfully');
-      } catch (pushErr) {
-        console.error('[db-init] prisma db push failed:', (pushErr as Error).message);
-      }
-    }
+    // Try to query the database
+    await prisma.$queryRaw`SELECT 1`;
+    console.log('[db-init] Database is accessible');
 
     // Seed if no users exist
     const userCount = await prisma.user.count();
@@ -67,24 +40,9 @@ export async function initDatabase() {
       console.log('[db-init] Database has', userCount, 'users, skipping seed');
     }
   } catch (error) {
-    console.error('[db-init] Initialization error:', (error as Error).message);
-    // Try to push schema as last resort
-    try {
-      const { execSync } = await import('child_process');
-      execSync('npx prisma db push --accept-data-loss', {
-        stdio: 'pipe',
-        cwd: process.cwd(),
-        timeout: 30000,
-      });
-      console.log('[db-init] Schema pushed on retry');
-
-      const userCount = await prisma.user.count();
-      if (userCount === 0) {
-        await seedDatabase(prisma);
-      }
-    } catch (retryErr) {
-      console.error('[db-init] Retry also failed:', (retryErr as Error).message);
-    }
+    console.error('[db-init] Database not accessible:', (error as Error).message);
+    console.log('[db-init] Please run: bun run db:push && bun run db:seed');
+    // Don't try to run prisma db push via execSync — it can hang
   } finally {
     await prisma.$disconnect();
   }

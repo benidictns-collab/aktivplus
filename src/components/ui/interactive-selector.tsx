@@ -195,6 +195,7 @@ export default function InteractiveSelector({
   }, [options]);
 
   // ─── Service Detail Modal ────────────────────────────────────────────────
+  /* eslint-disable react-hooks/static-components */
   const DetailModal = () => (
     <Dialog open={detailModalOpen} onOpenChange={setDetailModalOpen}>
       <DialogContent className="bg-[#111] border-[#D4AF37]/20 text-white max-w-2xl p-0 overflow-hidden">

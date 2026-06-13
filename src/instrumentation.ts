@@ -1,7 +1,7 @@
 export async function register() {
   // Only run on server side
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    console.log('[instrumentation] Server starting, initializing database...');
+    console.log('[instrumentation] Server starting...');
 
     try {
       // Dynamic import to avoid bundling issues

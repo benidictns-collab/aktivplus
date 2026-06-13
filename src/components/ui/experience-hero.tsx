@@ -1,147 +1,9 @@
 "use client";
 
-import React, { useRef, useEffect, useMemo, Suspense } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Float, MeshDistortMaterial } from '@react-three/drei';
-import * as THREE from 'three';
+import React, { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { Phone, ChevronRight, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-/* ─────────────────── 3D: Liquid Gold Background ─────────────────── */
-const LiquidBackground = () => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const { viewport } = useThree();
-  const uniforms = useMemo(() => ({
-    uTime: { value: 0 },
-    uMouse: { value: new THREE.Vector2(0, 0) },
-  }), []);
-
-  useFrame((state) => {
-    const { clock, mouse } = state;
-    if (meshRef.current) {
-      (meshRef.current.material as THREE.ShaderMaterial).uniforms.uTime.value = clock.getElapsedTime();
-      (meshRef.current.material as THREE.ShaderMaterial).uniforms.uMouse.value.lerp(mouse, 0.05);
-    }
-  });
-
-  return (
-    <mesh ref={meshRef} scale={[viewport.width, viewport.height, 1]}>
-      <planeGeometry args={[1, 1]} />
-      <shaderMaterial
-        transparent
-        uniforms={uniforms}
-        vertexShader={`
-          varying vec2 vUv;
-          void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }
-        `}
-        fragmentShader={`
-          uniform float uTime;
-          uniform vec2 uMouse;
-          varying vec2 vUv;
-
-          void main() {
-            vec2 uv = vUv;
-            float t = uTime * 0.15;
-            vec2 m = uMouse * 0.1;
-
-            // Dark base with subtle gold shimmer
-            float pattern = smoothstep(0.0, 1.0,
-              (sin(uv.x * 8.0 + t + m.x * 12.0) + sin(uv.y * 6.0 - t + m.y * 12.0)) * 0.5 + 0.5
-            );
-
-            // Mix near-black with very subtle gold tone
-            vec3 darkBase = vec3(0.02, 0.02, 0.02);
-            vec3 goldHint = vec3(0.08, 0.06, 0.02);
-            vec3 color = mix(darkBase, goldHint, pattern * 0.6);
-
-            gl_FragColor = vec4(color, 1.0);
-          }
-        `}
-      />
-    </mesh>
-  );
-};
-
-/* ─────────────────── 3D: Gold Monolith ─────────────────── */
-const Monolith = () => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.25;
-    }
-  });
-  return (
-    <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
-      <mesh ref={meshRef}>
-        <icosahedronGeometry args={[13, 1]} />
-        <MeshDistortMaterial
-          color="#1a1508"
-          speed={4}
-          distort={0.4}
-          roughness={0.05}
-          metalness={1.0}
-        />
-      </mesh>
-    </Float>
-  );
-};
-
-/* ─────────────────── 3D: Gold Particles ─────────────────── */
-const GoldParticles = () => {
-  const particlesRef = useRef<THREE.Points>(null);
-  const count = 120;
-
-  const positions = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 80;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 80;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 40;
-    }
-    return pos;
-  }, []);
-
-  useFrame((state) => {
-    if (particlesRef.current) {
-      particlesRef.current.rotation.y = state.clock.getElapsedTime() * 0.02;
-      particlesRef.current.rotation.x = Math.sin(state.clock.getElapsedTime() * 0.05) * 0.1;
-    }
-  });
-
-  return (
-    <points ref={particlesRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[positions, 3]}
-        />
-      </bufferGeometry>
-      <pointsMaterial
-        color="#D4AF37"
-        size={0.3}
-        transparent
-        opacity={0.6}
-        sizeAttenuation
-      />
-    </points>
-  );
-};
-
-/* ─────────────────── 3D Scene Wrapper ─────────────────── */
-const HeroScene = () => (
-  <Canvas camera={{ position: [0, 0, 60], fov: 35 }}>
-    <ambientLight intensity={0.4} />
-    <spotLight position={[50, 50, 50]} intensity={3} color="#D4AF37" />
-    <spotLight position={[-30, -30, 40]} intensity={1.5} color="#F1D28A" />
-    <LiquidBackground />
-    <Monolith />
-    <GoldParticles />
-  </Canvas>
-);
 
 /* ─────────────────── Interface ─────────────────── */
 export interface ExperienceHeroProps {
@@ -155,13 +17,11 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
   const ctaRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    // Immediately ensure the reveal container is visible (no flash/disappear)
     if (revealRef.current) {
       gsap.set(revealRef.current, { visibility: 'visible' });
     }
 
     const ctx = gsap.context(() => {
-      // Animate the title heading specifically — blur reveal effect
       const mainHeading = containerRef.current?.querySelector('.hero-main-heading');
       if (mainHeading) {
         gsap.fromTo(
@@ -171,7 +31,6 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
         );
       }
 
-      // Animate subtitle text
       const heroSubtitle = containerRef.current?.querySelector('.hero-subtitle');
       if (heroSubtitle) {
         gsap.fromTo(
@@ -181,7 +40,6 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
         );
       }
 
-      // Animate the label badge
       const heroLabel = containerRef.current?.querySelector('.hero-label');
       if (heroLabel) {
         gsap.fromTo(
@@ -191,7 +49,6 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
         );
       }
 
-      // Animate the CTA button
       const heroCta = containerRef.current?.querySelector('.hero-cta');
       if (heroCta) {
         gsap.fromTo(
@@ -245,26 +102,30 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
       ref={containerRef}
       className="relative min-h-screen w-full bg-[#0B0B0B] flex flex-col selection:bg-[#D4AF37] selection:text-black overflow-hidden"
     >
-      {/* 3D Background */}
+      {/* Animated CSS Background - Gold shimmer effect */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <Suspense
-          fallback={
-            <div className="w-full h-full bg-[#0B0B0B]" />
-          }
-        >
-          <HeroScene />
-        </Suspense>
+        <div className="absolute inset-0 bg-[#0B0B0B]" />
+        <div className="hero-gradient-orb absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full bg-[#D4AF37]/[0.03] blur-[120px] animate-float-slow" />
+        <div className="hero-gradient-orb absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-[#D4AF37]/[0.04] blur-[100px] animate-float-medium" />
+        <div className="hero-gradient-orb absolute top-1/2 left-1/2 w-[300px] h-[300px] rounded-full bg-[#F1D28A]/[0.02] blur-[80px] animate-float-fast" />
+        {/* Grid overlay */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `linear-gradient(rgba(212,175,55,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.3) 1px, transparent 1px)`,
+            backgroundSize: '60px 60px',
+          }}
+        />
       </div>
 
-      {/* Content overlay — always visible, no opacity:0 from GSAP */}
+      {/* Content overlay */}
       <div
         ref={revealRef}
         className="relative z-10 w-full flex flex-col md:flex-row px-5 sm:px-6 md:px-14 lg:px-20 pt-24 sm:pt-28 md:pt-32 pb-20 md:pb-10 min-h-screen items-center md:items-stretch gap-6 md:gap-10"
         style={{ visibility: 'visible' }}
       >
-        {/* ── Left Column ── */}
+        {/* Left Column */}
         <div className="flex-1 min-w-0 flex flex-col justify-center pb-4 md:pb-8 w-full">
-          {/* Main heading */}
           <div className="max-w-4xl pr-0 sm:pr-12">
             <div className="hero-label flex items-center gap-3 mb-6" style={{ opacity: 1 }}>
               <div className="relative w-2.5 h-2.5 bg-[#D4AF37] rounded-full">
@@ -302,7 +163,7 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
           </button>
         </div>
 
-        {/* ── Right Side Deck ── */}
+        {/* Right Side Deck */}
         <div className="w-full md:w-80 lg:w-96 flex-shrink-0 flex flex-col gap-3 sm:gap-4 justify-center z-20">
           {/* Panel 1: Availability */}
           <div className="command-cell glass-panel p-6 sm:p-7">
@@ -365,7 +226,7 @@ export const Component = ({ onNavigate }: ExperienceHeroProps) => {
         </div>
       </div>
 
-      {/* Bottom bar: location + scroll hint */}
+      {/* Bottom bar */}
       <div className="absolute bottom-0 left-0 right-0 z-20 px-5 sm:px-6 md:px-14 lg:px-20 pb-4 sm:pb-6">
         <div className="flex items-center justify-between gap-3">
           <div className="hidden sm:flex items-center gap-2 text-white/30 text-xs font-mono uppercase tracking-wider">
