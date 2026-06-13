@@ -145,9 +145,9 @@ export default function PropertyModal() {
           {/* Close button */}
           <button
             onClick={closePropertyModal}
-            className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-black/80 transition-colors"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-[60] w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white hover:bg-black/90 transition-all border border-white/10"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 sm:w-4 sm:h-4" />
           </button>
 
           {/* ─── Top: Image Gallery ─── */}

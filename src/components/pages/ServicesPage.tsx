@@ -296,9 +296,16 @@ export default function ServicesPage() {
 
       {/* ─── Service Detail Modal ──────────────────────────────── */}
       <Dialog open={selectedService !== null} onOpenChange={(open) => { if (!open) setSelectedService(null); }}>
-        <DialogContent className="bg-[#111] border-[#D4AF37]/20 text-white max-w-2xl p-0 overflow-hidden">
+        <DialogContent className="bg-[#111] border-[#D4AF37]/20 text-white max-w-2xl p-0 overflow-hidden" showCloseButton={false}>
           {activeService && activeServiceData && (
             <>
+              {/* Close button — custom, visible on mobile */}
+              <button
+                onClick={() => setSelectedService(null)}
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 z-[60] w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white hover:bg-black/90 transition-all border border-white/10"
+              >
+                <X className="w-5 h-5 sm:w-4 sm:h-4" />
+              </button>
               {/* Hero image */}
               <div className="relative h-48 md:h-56 overflow-hidden">
                 <img
