@@ -2,13 +2,11 @@
 # Start script for Timeweb Cloud App deployment
 # Assembles DATABASE_URL from separate PostgreSQL env vars and starts the app
 
-set -e
-
 echo "========================================="
 echo "[start] Aktiv Plus — Starting deployment"
 echo "========================================="
 
-# Ensure HOSTNAME is set for binding to all interfaces (required by PaaS)
+# Ensure HOST and PORT are set for binding to all interfaces
 export HOSTNAME=${HOSTNAME:-0.0.0.0}
 export PORT=${PORT:-3000}
 
@@ -25,9 +23,9 @@ else
   echo "[start] DATABASE_URL is already set"
 fi
 
-echo "[start] DATABASE_URL points to host: $(echo $DATABASE_URL | sed 's/.*@\([^:\/]*\).*/\1/')"
+echo "[start] Database host: $(echo $DATABASE_URL | sed 's/.*@\([^:\/]*\).*/\1/')"
 
-# Apply Prisma migrations (don't fail the whole script if this errors)
+# Apply Prisma migrations (continue even if it fails)
 echo "[start] Running prisma migrate deploy..."
 npx prisma migrate deploy 2>&1 || {
   echo "[start] WARNING: prisma migrate deploy failed, trying prisma db push..."
@@ -36,23 +34,10 @@ npx prisma migrate deploy 2>&1 || {
   }
 }
 
-# Seed database if empty (idempotent — seed script checks for existing data)
+# Seed database if empty
 echo "[start] Running prisma db seed..."
 npx prisma db seed 2>&1 || echo "[start] Seed skipped or already seeded"
 
-# Copy static assets for standalone mode
-echo "[start] Preparing standalone server..."
-if [ -d ".next/standalone" ]; then
-  # Copy static files that standalone server needs
-  cp -r .next/static .next/standalone/.next/static 2>/dev/null || true
-  cp -r public .next/standalone/public 2>/dev/null || true
-  # Copy prisma schema for runtime
-  cp -r prisma .next/standalone/prisma 2>/dev/null || true
-
-  echo "[start] Starting Next.js standalone server on ${HOSTNAME}:${PORT}..."
-  cd .next/standalone
-  exec node server.js
-else
-  echo "[start] No standalone build found, falling back to next start..."
-  exec npx next start -p $PORT -H $HOSTNAME
-fi
+# Start Next.js server
+echo "[start] Starting Next.js server on ${HOSTNAME}:${PORT}..."
+exec npx next start -p $PORT -H $HOSTNAME
